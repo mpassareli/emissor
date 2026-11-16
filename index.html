@@ -1,1535 +1,1044 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emissor Térmico 80mm - Feito à Mão Doceria</title>
+    <title>Emissor Térmico 80mm</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         @media print {
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
-
-            html,
-            body {
-                background: #ffffff !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 80mm !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            .no-print {
-                display: none !important;
-            }
-
-            .receipt-wrapper {
-                padding: 0 !important;
-                margin: 0 !important;
-                background: #ffffff !important;
-                display: block !important;
-                width: 80mm !important;
-            }
-
-            .receipt-container {
-                width: 80mm !important;
-                max-width: 80mm !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 3mm 4mm !important;
-                border: none !important;
-            }
+            @page { size: 80mm auto; margin: 0; }
+            html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+            .receipt-container { width: 80mm !important; max-width: 80mm !important; box-shadow: none !important; border: none !important; margin: 0 !important; padding: 3mm 4mm !important; }
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        .receipt-font {
-            font-family: 'Courier Prime', 'Courier New', monospace;
-        }
-
-        .thermal-bw {
-            filter: grayscale(100%) contrast(230%) brightness(106%);
-            mix-blend-mode: multiply;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 9999px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .receipt-font { font-family: 'Courier Prime', 'Courier New', monospace; }
+        .thermal-bw { filter: grayscale(100%) contrast(230%) brightness(106%); mix-blend-mode: multiply; }
     </style>
 </head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col xl:flex-row">
-
-    <!-- ==================== PAINEL DE CONTROLES ==================== -->
-    <aside
-        class="no-print w-full xl:w-[550px] bg-white border-r border-slate-200 flex flex-col xl:max-h-screen shadow-xl z-10">
-
-        <div class="p-5 border-b border-slate-200 bg-gradient-to-r from-amber-50 to-orange-50/50">
-            <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="bg-amber-800 text-white p-2.5 rounded-xl shadow-sm">
-                        <i class="fa-solid fa-receipt text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-bold text-slate-900 leading-tight">Emissor Térmico 80mm</h1>
-                        <p class="text-xs text-amber-900 font-medium">Tomate MDK-81 • Vendas registradas na planilha</p>
-                    </div>
-                </div>
-                <span id="save-badge"
-                    class="text-[11px] bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full opacity-0 transition-opacity duration-300">
-                    <i class="fa-solid fa-check mr-1"></i>Salvo
-                </span>
+    <!-- ==================== TELA DE LOGIN E CADASTRO ==================== -->
+    <section id="tela-auth" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
+            <div class="text-center space-y-2">
+                <div class="inline-flex bg-amber-800 text-white p-3 rounded-xl"><i class="fa-solid fa-receipt text-xl"></i></div>
+                <h1 class="text-lg font-bold">Emissor Térmico 80mm</h1>
             </div>
 
-            <nav class="grid grid-cols-3 gap-1.5 mt-4 bg-slate-200/80 p-1 rounded-xl" role="tablist">
-                <button type="button" data-tab="nota"
-                    class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold transition-all bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-file-invoice-dollar text-amber-700"></i> Montar Nota
-                </button>
-                <button type="button" data-tab="produtos"
-                    class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-file-excel text-emerald-700"></i> Planilha (.XLSX)
-                </button>
-                <button type="button" data-tab="empresa"
-                    class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i class="fa-solid fa-sliders text-amber-700"></i> Fonte & Dados
-                </button>
-            </nav>
+            <!-- LOGIN -->
+            <div id="form-login" class="space-y-4">
+                <p class="text-xs text-slate-500 text-center">Entre com o e-mail e a senha da sua loja</p>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">E-mail</label>
+                    <input type="email" id="auth-email" autocomplete="email" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Senha</label>
+                    <input type="password" id="auth-senha" autocomplete="current-password" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <button type="button" id="btn-entrar" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-semibold py-2.5 rounded-xl cursor-pointer">Entrar</button>
+                <p class="text-xs text-center text-slate-600">
+                    Não tem conta?
+                    <button type="button" id="btn-ir-cadastro" class="text-amber-800 font-semibold hover:underline cursor-pointer">Cadastre-se</button>
+                </p>
+            </div>
+
+            <!-- CADASTRO -->
+            <div id="form-cadastro" class="hidden space-y-4">
+                <p class="text-xs text-slate-500 text-center">Crie a conta da sua loja</p>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nome da loja</label>
+                    <input type="text" id="cad-nome" autocomplete="organization" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">E-mail</label>
+                    <input type="email" id="cad-email" autocomplete="email" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Senha</label>
+                    <input type="password" id="cad-senha" autocomplete="new-password" placeholder="Mínimo de 6 caracteres" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Confirmar senha</label>
+                    <input type="password" id="cad-confirma" autocomplete="new-password" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                </div>
+                <button type="button" id="btn-criar-conta" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-semibold py-2.5 rounded-xl cursor-pointer">Criar conta</button>
+                <p class="text-xs text-center text-slate-600">
+                    Já tem conta?
+                    <button type="button" id="btn-ir-login" class="text-amber-800 font-semibold hover:underline cursor-pointer">Entrar</button>
+                </p>
+            </div>
         </div>
+    </section>
 
-        <div class="flex-1 overflow-y-auto p-5 space-y-5">
+    <!-- ==================== APLICATIVO ==================== -->
+    <div id="tela-app" class="hidden flex-col xl:flex-row min-h-screen">
 
-            <!-- ABA 1: MONTAR NOTA -->
-            <section id="tab-nota" class="tab-content space-y-5">
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                            <i class="fa-solid fa-file-excel text-emerald-600 mr-1.5"></i>Produtos da Planilha • 1
-                            Clique
-                        </h2>
-                        <button type="button" id="btn-go-produtos"
-                            class="text-[11px] text-amber-800 hover:underline font-semibold cursor-pointer">
-                            + Gerenciar Planilha
-                        </button>
-                    </div>
-                    <div id="quick-catalog-list" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"></div>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                            <i class="fa-solid fa-basket-shopping mr-1.5"></i>Itens nesta Nota
-                        </h2>
-                        <div class="flex gap-1.5">
-                            <button type="button" id="btn-clear-items"
-                                class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium px-2.5 py-1.5 rounded-lg transition-all cursor-pointer">
-                                Limpar
-                            </button>
-                            <button type="button" id="btn-add-item"
-                                class="text-xs bg-amber-800 hover:bg-amber-900 text-white font-medium px-3 py-1.5 rounded-lg transition-all shadow-xs cursor-pointer">
-                                <i class="fa-solid fa-plus mr-1"></i> Item Avulso
-                            </button>
-                        </div>
-                    </div>
-                    <div id="items-editor-container" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                            <i class="fa-solid fa-user-tag mr-1.5"></i>Cliente & Pagamento
-                        </h2>
-                        <button type="button" id="btn-new-order"
-                            class="text-[11px] bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-lg font-medium cursor-pointer">
-                            <i class="fa-solid fa-rotate mr-1"></i>Limpar Pedido
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <aside class="no-print w-full xl:w-[550px] bg-white border-r border-slate-200 flex flex-col xl:max-h-screen shadow-xl">
+            <div class="p-5 border-b border-slate-200 bg-gradient-to-r from-amber-50 to-orange-50/50">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-amber-800 text-white p-2.5 rounded-xl"><i class="fa-solid fa-receipt text-xl"></i></div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Nome do Cliente</label>
-                            <input type="text" id="input-cliente" placeholder="Opcional"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            <h1 class="text-lg font-bold leading-tight" id="header-loja">Emissor Térmico 80mm</h1>
+                            <p class="text-xs text-amber-900 font-medium">Tomate MDK-81</p>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Telefone / Endereço
-                                Entrega</label>
-                            <input type="text" id="input-cliente-info" placeholder="Opcional"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Taxa Entrega (R$)</label>
-                            <input type="number" step="0.50" min="0" id="input-entrega" placeholder="0.00"
-                                class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Desconto (R$)</label>
-                            <input type="number" step="0.50" min="0" id="input-desconto" placeholder="0.00"
-                                class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Pagamento</label>
-                            <select id="input-pagamento"
-                                class="w-full px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                                <option value="PIX">PIX</option>
-                                <option value="Cartão de Crédito">Cartão Crédito</option>
-                                <option value="Cartão de Débito">Cartão Débito</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Valor Pago (Troco)</label>
-                            <input type="number" step="1.00" min="0" id="input-recebido" placeholder="0.00"
-                                class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Observações do Pedido</label>
-                        <input type="text" id="input-obs" placeholder="Opcional"
-                            class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                    </div>
-                </div>
-            </section>
-
-            <!-- ABA 2: PLANILHA (.XLSX) -->
-            <section id="tab-produtos" class="tab-content hidden space-y-4">
-
-                <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 space-y-3">
-                    <div>
-                        <h2
-                            class="text-xs font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-excel text-emerald-700 text-sm"></i>
-                            Planilha com abas Produtos, Vendas e Configurações
-                        </h2>
-                        <p id="xlsx-status-text" class="text-[11px] text-emerald-800 mt-1 font-medium">Sem arquivo
-                            vinculado.</p>
-                        <p class="text-[11px] text-emerald-900 mt-1">Vendas registradas: <strong
-                                id="sales-count">0</strong></p>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                        <button type="button" id="btn-import-xlsx"
-                            class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-2.5 px-3 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-folder-open"></i> Importar / Vincular (.xlsx)
-                        </button>
-                        <button type="button" id="btn-export-xlsx"
-                            class="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-semibold py-2.5 px-3 rounded-lg shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                            <i class="fa-solid fa-download"></i> Baixar Planilha (.xlsx)
-                        </button>
-                    </div>
-
-                    <button type="button" id="btn-sync-disk-xlsx"
-                        class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-floppy-disk text-emerald-400"></i> Salvar Planilha Agora
-                    </button>
-
-                    <input type="file" id="xlsx-file-input" accept=".xlsx,.xls" class="hidden">
-                </div>
-
-                <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-amber-950">
-                        <i class="fa-solid fa-plus-circle mr-1.5"></i><span id="catalog-form-title">Cadastrar Novo
-                            Produto</span>
-                    </h2>
-                    <input type="hidden" id="catalog-edit-index" value="-1">
-                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                        <div class="sm:col-span-3">
-                            <label class="block text-[11px] font-medium text-slate-700 mb-1">Código</label>
-                            <input type="text" id="catalog-prod-codigo" placeholder="Auto"
-                                class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                        <div class="sm:col-span-6">
-                            <label class="block text-[11px] font-medium text-slate-700 mb-1">Nome do Produto</label>
-                            <input type="text" id="catalog-prod-nome"
-                                class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-[11px] font-medium text-slate-700 mb-1">Preço (R$)</label>
-                            <input type="number" step="0.50" min="0" id="catalog-prod-valor" placeholder="0.00"
-                                class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-medium text-slate-700 mb-1">Categoria</label>
-                        <input type="text" id="catalog-prod-categoria"
-                            class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="button" id="btn-save-catalog-prod"
-                            class="flex-1 bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold py-2.5 px-4 rounded-lg shadow-xs transition-all cursor-pointer">
-                            <i class="fa-solid fa-check mr-1.5"></i><span id="catalog-submit-text">Adicionar
-                                Produto</span>
-                        </button>
-                        <button type="button" id="catalog-cancel-edit"
-                            class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg cursor-pointer">
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                            <i class="fa-solid fa-table-list mr-1.5"></i>Produtos (<span id="catalog-count">0</span>)
-                        </h2>
-                        <input type="text" id="catalog-search" placeholder="Filtrar produto..."
-                            class="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg focus:ring-1 focus:ring-amber-600 focus:outline-none w-36">
-                    </div>
-                    <div id="catalog-list-container" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
-                </div>
-            </section>
-
-            <!-- ABA 3: FONTE & DADOS DA EMPRESA -->
-            <section id="tab-empresa" class="tab-content hidden space-y-4">
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        <i class="fa-solid fa-image mr-1.5"></i>Logotipo
-                    </h2>
-                    <p id="logo-status" class="text-[11px] text-slate-600 font-medium">Procurando logo na pasta...</p>
-                    <div class="flex items-center justify-between gap-2">
-                        <label
-                            class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
-                            <input type="checkbox" id="input-logo-bw" checked
-                                class="w-4 h-4 rounded accent-amber-800 cursor-pointer">
-                            <span>Alto contraste P&B (remove fundo bege na térmica)</span>
-                        </label>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-xs text-slate-600 mb-1">
-                            <span>Largura da Logo:</span>
-                            <span id="logo-width-label" class="font-bold">155px</span>
-                        </div>
-                        <input type="range" id="input-logo-width" min="80" max="240" step="5" value="155"
-                            class="w-full accent-amber-800 cursor-pointer">
-                    </div>
-                    <div class="flex gap-2 pt-1">
-                        <button type="button" id="btn-upload-logo"
-                            class="flex-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold py-2 px-3 rounded-lg cursor-pointer">
-                            <i class="fa-solid fa-upload mr-1.5"></i>Usar Outra Imagem
-                        </button>
-                        <button type="button" id="btn-reset-logo"
-                            class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold py-2 px-3 rounded-lg cursor-pointer"
-                            title="Voltar à logo da pasta">
-                            Automática
-                        </button>
-                        <input type="file" id="logo-file-input" accept="image/*" class="hidden">
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        <i class="fa-solid fa-text-height mr-1.5"></i>Fonte da Impressão
-                    </h2>
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-slate-600">Tamanho da letra</span>
-                        <span id="font-size-label"
-                            class="text-xs font-bold bg-amber-800 text-white px-2.5 py-0.5 rounded-full">14px</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button type="button" id="btn-font-dec"
-                            class="w-9 h-9 rounded-lg bg-white border border-amber-300 hover:bg-amber-100 active:scale-95 text-amber-950 font-bold flex items-center justify-center cursor-pointer"
-                            title="Diminuir fonte">
-                            <i class="fa-solid fa-minus text-xs"></i>
-                        </button>
-                        <input type="range" id="input-fontsize" min="11" max="22" step="1" value="14"
-                            class="flex-1 accent-amber-800 cursor-pointer">
-                        <button type="button" id="btn-font-inc"
-                            class="w-9 h-9 rounded-lg bg-white border border-amber-300 hover:bg-amber-100 active:scale-95 text-amber-950 font-bold flex items-center justify-center cursor-pointer"
-                            title="Aumentar fonte">
-                            <i class="fa-solid fa-plus text-xs"></i>
-                        </button>
+                        <span id="save-badge" class="text-[11px] bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full opacity-0 transition-opacity duration-300"><i class="fa-solid fa-check mr-1"></i>Salvo</span>
+                        <a href="dashboard.html" class="text-xs bg-amber-800 hover:bg-amber-900 text-white px-2.5 py-1.5 rounded-lg" title="Dashboard de vendas"><i class="fa-solid fa-chart-column mr-1"></i>Dashboard</a>
+                        <button type="button" id="btn-sair" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg cursor-pointer" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
                     </div>
-                    <label
-                        class="inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
-                        <input type="checkbox" id="input-bold-mode" checked
-                            class="w-4 h-4 rounded accent-amber-800 cursor-pointer">
-                        <span>Negrito reforçado</span>
-                    </label>
                 </div>
+                <nav class="grid grid-cols-3 gap-1.5 mt-4 bg-slate-200/80 p-1 rounded-xl">
+                    <button type="button" data-tab="nota" class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs cursor-pointer"><i class="fa-solid fa-file-invoice-dollar text-amber-700 mr-1"></i>Montar Nota</button>
+                    <button type="button" data-tab="produtos" class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer"><i class="fa-solid fa-boxes-stacked text-emerald-700 mr-1"></i>Produtos</button>
+                    <button type="button" data-tab="loja" class="tab-btn py-2 px-3 rounded-lg text-xs font-semibold text-slate-600 cursor-pointer"><i class="fa-solid fa-store text-amber-700 mr-1"></i>Loja & PIX</button>
+                </nav>
+            </div>
 
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        <i class="fa-solid fa-store mr-1.5"></i>Dados da Empresa (salvos na aba Configurações)
-                    </h2>
-                    <div class="space-y-2.5">
+            <div class="flex-1 overflow-y-auto p-5 space-y-5">
+
+                <!-- ABA NOTA -->
+                <section id="tab-nota" class="tab-content space-y-5">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">Produtos • 1 Clique</h2>
+                            <button type="button" id="btn-go-produtos" class="text-[11px] text-amber-800 hover:underline font-semibold cursor-pointer">+ Gerenciar</button>
+                        </div>
+                        <div id="quick-produtos" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1"></div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-basket-shopping mr-1.5"></i>Itens nesta Nota</h2>
+                            <div class="flex gap-1.5">
+                                <button type="button" id="btn-limpar-itens" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg cursor-pointer">Limpar</button>
+                                <button type="button" id="btn-item-avulso" class="text-xs bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-plus mr-1"></i>Item Avulso</button>
+                            </div>
+                        </div>
+                        <div id="items-editor" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-user-tag mr-1.5"></i>Cliente & Pagamento</h2>
+                            <button type="button" id="btn-novo-pedido" class="text-[11px] bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-2.5 py-1 rounded-lg cursor-pointer"><i class="fa-solid fa-rotate mr-1"></i>Limpar Pedido</button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Nome do Cliente</label>
+                                <input type="text" id="input-cliente" placeholder="Opcional" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp do Cliente (com DDD)</label>
+                                <input type="tel" id="input-cliente-tel" placeholder="(18) 99999-9999" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                        </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Nome Fantasia / Razão
-                                Social</label>
-                            <input type="text" id="input-nome"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Endereço de Entrega / Retirada</label>
+                            <input type="text" id="input-cliente-info" placeholder="Opcional" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Entrega (R$)</label>
+                                <input type="number" step="0.50" min="0" id="input-entrega" placeholder="0.00" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Desconto (R$)</label>
+                                <input type="number" step="0.50" min="0" id="input-desconto" placeholder="0.00" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Pagamento</label>
+                                <select id="input-pagamento" class="w-full px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                                    <option value="PIX">PIX</option>
+                                    <option value="Cartão de Crédito">Cartão Crédito</option>
+                                    <option value="Cartão de Débito">Cartão Débito</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Valor Pago (Troco)</label>
+                                <input type="number" step="1.00" min="0" id="input-recebido" placeholder="0.00" class="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Observações</label>
+                            <input type="text" id="input-obs" placeholder="Opcional" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ABA PRODUTOS -->
+                <section id="tab-produtos" class="tab-content hidden space-y-4">
+                    <div class="bg-emerald-50/80 p-4 rounded-xl border border-emerald-200 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-950">Importar / Exportar Planilha</h2>
+                        <p class="text-[11px] text-emerald-900">Use a coluna <strong>Codigo</strong> para atualizar produtos existentes sem duplicar. Colunas aceitas: Codigo, Produto, Categoria, Preco.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button type="button" id="btn-importar" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-2.5 rounded-lg cursor-pointer"><i class="fa-solid fa-file-import mr-1"></i>Importar (.xlsx)</button>
+                            <button type="button" id="btn-exportar" class="bg-white hover:bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-semibold py-2.5 rounded-lg cursor-pointer"><i class="fa-solid fa-download mr-1"></i>Exportar (.xlsx)</button>
+                        </div>
+                        <input type="file" id="input-arquivo-xlsx" accept=".xlsx,.xls" class="hidden">
+                    </div>
+
+                    <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-amber-950" id="prod-titulo">Cadastrar Produto</h2>
+                        <input type="hidden" id="prod-id">
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                            <div class="sm:col-span-3">
+                                <label class="block text-[11px] font-medium text-slate-700 mb-1">Código</label>
+                                <input type="text" id="prod-codigo" placeholder="Auto" class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-6">
+                                <label class="block text-[11px] font-medium text-slate-700 mb-1">Nome</label>
+                                <input type="text" id="prod-nome" class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-3">
+                                <label class="block text-[11px] font-medium text-slate-700 mb-1">Preço (R$)</label>
+                                <input type="number" step="0.50" min="0" id="prod-preco" class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-700 mb-1">Categoria</label>
+                            <input type="text" id="prod-categoria" class="w-full px-2.5 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" id="btn-salvar-prod" class="flex-1 bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold py-2.5 rounded-lg cursor-pointer">Salvar Produto</button>
+                            <button type="button" id="btn-cancelar-prod" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold py-2.5 px-3 rounded-lg cursor-pointer">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">Produtos (<span id="prod-count">0</span>)</h2>
+                            <input type="text" id="prod-busca" placeholder="Filtrar..." class="px-2.5 py-1 text-xs bg-white border border-slate-300 rounded-lg w-36 focus:outline-none">
+                        </div>
+                        <div id="lista-produtos" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+                    </div>
+                </section>
+
+                <!-- ABA LOJA & PIX -->
+                <section id="tab-loja" class="tab-content hidden space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-image mr-1.5"></i>Logo</h2>
+                        <p id="logo-status" class="text-[11px] text-slate-600">Procurando logo na pasta...</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-text-height mr-1.5"></i>Fonte da Impressão</h2>
+                        <div class="flex items-center gap-2">
+                            <input type="range" id="loja-fontsize" min="11" max="22" step="1" value="14" class="flex-1 accent-amber-800">
+                            <span id="loja-fontsize-label" class="text-xs font-bold bg-amber-800 text-white px-2.5 py-0.5 rounded-full">14px</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2.5">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-store mr-1.5"></i>Dados da Loja</h2>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Nome Fantasia / Razão Social</label>
+                            <input type="text" id="loja-nome" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                             <div>
                                 <label class="block text-xs font-medium text-slate-700 mb-1">CNPJ</label>
-                                <input type="text" id="input-cnpj"
-                                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                                <input type="text" id="loja-cnpj" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp / Telefone</label>
-                                <input type="text" id="input-tel"
-                                    class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                                <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp da Loja</label>
+                                <input type="text" id="loja-telefone" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Endereço Completo</label>
-                            <input type="text" id="input-endereco"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Endereço</label>
+                            <input type="text" id="loja-endereco" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-700 mb-1">Atendente / Confeiteira</label>
-                            <input type="text" id="input-atendente"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            <input type="text" id="loja-atendente" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Chave PIX</label>
+                                <input type="text" id="loja-chave-pix" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Tipo</label>
+                                <select id="loja-tipo-pix" class="w-full px-2 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none">
+                                    <option value="">Selecione</option>
+                                    <option value="CPF">CPF</option>
+                                    <option value="CNPJ">CNPJ</option>
+                                    <option value="E-mail">E-mail</option>
+                                    <option value="Telefone">Telefone</option>
+                                    <option value="Aleatória">Aleatória</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-700 mb-1">Mensagem de Rodapé</label>
-                            <textarea id="input-rodape" rows="2"
-                                class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none"></textarea>
+                            <textarea id="loja-rodape" rows="2" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-600 focus:outline-none"></textarea>
                         </div>
+                        <button type="button" id="btn-salvar-loja" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-2.5 rounded-lg cursor-pointer">Salvar Dados da Loja</button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 grid grid-cols-1 gap-2">
+                <button type="button" id="btn-whatsapp" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl cursor-pointer text-sm"><i class="fa-brands fa-whatsapp mr-1"></i>Registrar e Enviar no WhatsApp</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btn-imprimir" class="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2.5 rounded-xl cursor-pointer text-sm"><i class="fa-solid fa-print mr-1"></i>Imprimir</button>
+                    <button type="button" id="btn-imprimir-enviar" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl cursor-pointer text-sm">Imprimir e Enviar</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- PRÉ-VISUALIZAÇÃO DO CUPOM -->
+        <main class="flex-1 flex flex-col items-center justify-start xl:justify-center p-6 md:p-10 overflow-y-auto bg-slate-200/70">
+            <div id="receipt-paper" class="receipt-container receipt-font font-bold bg-white text-black w-[80mm] max-w-full p-4 shadow-2xl border border-slate-300 leading-snug" style="font-size: 14px;">
+                <div class="text-center border-b-2 border-dashed border-black pb-2.5 mb-2.5">
+                    <img id="receipt-logo" alt="Logo" class="thermal-bw mx-auto mb-2 block h-auto hidden" style="width: 155px;">
+                    <div id="rcpt-nome" class="font-bold uppercase tracking-wide" style="font-size: 1.15em;"></div>
+                    <div id="rcpt-cnpj" style="font-size: 0.9em;"></div>
+                    <div id="rcpt-endereco" class="leading-tight" style="font-size: 0.85em;"></div>
+                    <div id="rcpt-tel" style="font-size: 0.85em;"></div>
+                </div>
+                <div class="border-b border-dashed border-black pb-2 mb-2 space-y-0.5" style="font-size: 0.9em;">
+                    <div class="text-center font-bold uppercase tracking-wider mb-1">COMPROVANTE DE PEDIDO</div>
+                    <div class="flex justify-between"><span>Pedido Nº:</span><span id="rcpt-numero">000001</span></div>
+                    <div class="flex justify-between"><span>Data/Hora:</span><span id="rcpt-data">--/--/---- --:--</span></div>
+                    <div id="rcpt-atendente-row" class="flex justify-between hidden"><span>Atendente:</span><span id="rcpt-atendente"></span></div>
+                </div>
+                <div id="rcpt-cliente-row" class="border-b border-dashed border-black pb-2 mb-2 space-y-0.5 hidden" style="font-size: 0.9em;">
+                    <div class="flex justify-between"><span>Cliente:</span><span id="rcpt-cliente" class="text-right"></span></div>
+                    <div id="rcpt-cliente-info" class="hidden text-right" style="font-size: 0.88em;"></div>
+                </div>
+                <div class="flex justify-between border-b border-dashed border-black pb-1 mb-1 uppercase" style="font-size: 0.85em;">
+                    <div class="w-7/12">Item</div><div class="w-2/12 text-center">Qtd</div><div class="w-3/12 text-right">Total</div>
+                </div>
+                <div id="rcpt-itens" class="divide-y divide-dotted divide-slate-400 border-b border-dashed border-black pb-2 mb-2"></div>
+                <div class="space-y-1 border-b-2 border-dashed border-black pb-2.5 mb-2.5">
+                    <div class="flex justify-between" style="font-size: 0.92em;"><span>Subtotal:</span><span id="rcpt-subtotal">R$ 0,00</span></div>
+                    <div id="rcpt-entrega-row" class="hidden flex justify-between" style="font-size: 0.92em;"><span>Taxa Entrega:</span><span id="rcpt-entrega"></span></div>
+                    <div id="rcpt-desconto-row" class="hidden flex justify-between" style="font-size: 0.92em;"><span>Desconto:</span><span id="rcpt-desconto"></span></div>
+                    <div class="flex justify-between font-bold border-t border-dashed border-black pt-1.5 mt-1" style="font-size: 1.2em;"><span>TOTAL A PAGAR:</span><span id="rcpt-total">R$ 0,00</span></div>
+                    <div class="flex justify-between pt-1" style="font-size: 0.92em;"><span>Forma Pgto:</span><span id="rcpt-pagamento">PIX</span></div>
+                    <div id="rcpt-troco-box" class="hidden space-y-0.5 pt-1 border-t border-dotted border-slate-400" style="font-size: 0.9em;">
+                        <div class="flex justify-between"><span>Valor Recebido:</span><span id="rcpt-recebido"></span></div>
+                        <div class="flex justify-between"><span>Troco:</span><span id="rcpt-troco"></span></div>
                     </div>
                 </div>
-            </section>
-        </div>
-
-        <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-2">
-            <button type="button" id="btn-print-clean"
-                class="w-full bg-amber-800 hover:bg-amber-900 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer text-sm">
-                <i class="fa-solid fa-print text-base"></i> Imprimir e Registrar Venda
-            </button>
-            <button type="button" id="btn-print-direct"
-                class="w-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold py-2 px-4 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs">
-                <i class="fa-solid fa-up-right-from-square"></i> Impressão Direta do Navegador (registra a venda também)
-            </button>
-        </div>
-    </aside>
-
-    <!-- ==================== PRÉ-VISUALIZAÇÃO DO RECIBO ==================== -->
-    <main
-        class="receipt-wrapper flex-1 flex flex-col items-center justify-start xl:justify-center p-6 md:p-10 overflow-y-auto bg-slate-200/70">
-
-        <div
-            class="no-print mb-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-600 bg-white/90 px-4 py-2 rounded-full shadow-2xs border border-slate-200">
-            <span class="font-semibold text-slate-800"><i
-                    class="fa-solid fa-ruler-horizontal text-amber-800 mr-1"></i>Bobina 80mm</span>
-            <span>•</span>
-            <span>Fonte: <strong id="preview-badge-font" class="text-amber-900">14px</strong></span>
-        </div>
-
-        <div id="receipt-paper"
-            class="receipt-container receipt-font font-bold bg-white text-black w-[80mm] max-w-full p-4 shadow-2xl border border-slate-300 leading-snug"
-            style="font-size: 14px;">
-
-            <div class="text-center border-b-2 border-dashed border-black pb-2.5 mb-2.5">
-                <img id="receipt-logo" alt="Logo" class="thermal-bw mx-auto mb-2 block h-auto hidden"
-                    style="width: 155px;">
-                <div id="rcpt-nome" class="font-bold uppercase tracking-wide" style="font-size: 1.15em;"></div>
-                <div id="rcpt-cnpj" class="mt-0.5" style="font-size: 0.9em;"></div>
-                <div id="rcpt-endereco" class="mt-0.5 leading-tight" style="font-size: 0.85em;"></div>
-                <div id="rcpt-tel" class="mt-0.5" style="font-size: 0.85em;"></div>
-            </div>
-
-            <div class="border-b border-dashed border-black pb-2 mb-2 space-y-0.5" style="font-size: 0.9em;">
-                <div class="text-center font-bold uppercase tracking-wider mb-1">COMPROVANTE DE PEDIDO</div>
-                <div class="flex justify-between">
-                    <span>Pedido Nº:</span>
-                    <span id="rcpt-numero">000001</span>
+                <div id="rcpt-obs-box" class="hidden border-b border-dashed border-black pb-2 mb-2" style="font-size: 0.88em;">
+                    <div class="uppercase underline mb-0.5">Observações:</div>
+                    <div id="rcpt-obs" class="break-words"></div>
                 </div>
-                <div class="flex justify-between">
-                    <span>Data/Hora:</span>
-                    <span id="rcpt-data">--/--/---- --:--</span>
-                </div>
-                <div id="rcpt-atendente-row" class="flex justify-between hidden">
-                    <span>Atendente:</span>
-                    <span id="rcpt-atendente"></span>
+                <div class="text-center space-y-1.5 pt-1" style="font-size: 0.85em;">
+                    <div id="rcpt-rodape" class="leading-tight"></div>
+                    <div class="pt-1 tracking-widest opacity-80">********************************</div>
+                    <div style="font-size: 0.8em;">Documento sem valor fiscal</div>
                 </div>
             </div>
-
-            <div id="rcpt-cliente-row" class="border-b border-dashed border-black pb-2 mb-2 space-y-0.5 hidden"
-                style="font-size: 0.9em;">
-                <div class="flex justify-between">
-                    <span>Cliente:</span>
-                    <span id="rcpt-cliente" class="text-right"></span>
-                </div>
-                <div id="rcpt-cliente-info" class="hidden text-right" style="font-size: 0.88em;"></div>
-            </div>
-
-            <div class="flex justify-between border-b border-dashed border-black pb-1 mb-1 uppercase"
-                style="font-size: 0.85em;">
-                <div class="w-7/12">Item</div>
-                <div class="w-2/12 text-center">Qtd</div>
-                <div class="w-3/12 text-right">Total</div>
-            </div>
-
-            <div id="rcpt-items-list"
-                class="divide-y divide-dotted divide-slate-400 border-b border-dashed border-black pb-2 mb-2"></div>
-
-            <div class="space-y-1 border-b-2 border-dashed border-black pb-2.5 mb-2.5">
-                <div class="flex justify-between" style="font-size: 0.92em;">
-                    <span>Subtotal:</span>
-                    <span id="rcpt-subtotal">R$ 0,00</span>
-                </div>
-                <div id="rcpt-entrega-row" class="hidden flex justify-between" style="font-size: 0.92em;">
-                    <span>Taxa Entrega:</span>
-                    <span id="rcpt-entrega">R$ 0,00</span>
-                </div>
-                <div id="rcpt-desconto-row" class="hidden flex justify-between" style="font-size: 0.92em;">
-                    <span>Desconto:</span>
-                    <span id="rcpt-desconto">- R$ 0,00</span>
-                </div>
-                <div class="flex justify-between font-bold border-t border-dashed border-black pt-1.5 mt-1"
-                    style="font-size: 1.2em;">
-                    <span>TOTAL A PAGAR:</span>
-                    <span id="rcpt-total">R$ 0,00</span>
-                </div>
-                <div class="flex justify-between pt-1" style="font-size: 0.92em;">
-                    <span>Forma Pgto:</span>
-                    <span id="rcpt-pagamento">PIX</span>
-                </div>
-                <div id="rcpt-troco-box" class="hidden space-y-0.5 pt-1 border-t border-dotted border-slate-400"
-                    style="font-size: 0.9em;">
-                    <div class="flex justify-between">
-                        <span>Valor Recebido:</span>
-                        <span id="rcpt-recebido">R$ 0,00</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Troco:</span>
-                        <span id="rcpt-troco">R$ 0,00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="rcpt-obs-box" class="hidden border-b border-dashed border-black pb-2 mb-2"
-                style="font-size: 0.88em;">
-                <div class="uppercase underline mb-0.5">Observações:</div>
-                <div id="rcpt-obs" class="break-words"></div>
-            </div>
-
-            <div class="text-center space-y-1.5 pt-1" style="font-size: 0.85em;">
-                <div id="rcpt-rodape" class="leading-tight"></div>
-                <div class="pt-1 tracking-widest opacity-80">********************************</div>
-                <div style="font-size: 0.8em;">Documento sem valor fiscal</div>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- MODAL -->
-    <div id="custom-modal" class="no-print fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
+    <div id="modal" class="no-print fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-circle-info"></i>
-                </div>
-                <h3 id="modal-title" class="text-base font-bold text-slate-900">Aviso</h3>
-            </div>
-            <p id="modal-message" class="text-xs text-slate-600 leading-relaxed"></p>
-            <div class="flex justify-end gap-2 pt-2">
-                <button type="button" id="modal-cancel-btn"
-                    class="hidden px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer">Cancelar</button>
-                <button type="button" id="modal-confirm-btn"
-                    class="px-4 py-2 text-xs font-semibold bg-amber-800 hover:bg-amber-900 text-white rounded-xl cursor-pointer">Entendi</button>
+            <h3 id="modal-titulo" class="text-base font-bold text-slate-900">Aviso</h3>
+            <p id="modal-texto" class="text-xs text-slate-600 leading-relaxed"></p>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="modal-cancelar" class="hidden px-3.5 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer">Cancelar</button>
+                <button type="button" id="modal-ok" class="px-4 py-2 text-xs font-semibold bg-amber-800 hover:bg-amber-900 text-white rounded-xl cursor-pointer">Entendi</button>
             </div>
         </div>
     </div>
 
     <script>
-        (function () {
-            'use strict';
+    (function () {
+        'use strict';
 
-            const LS_KEY = 'feito_a_mao_estado_v4';
-            const IDB_NAME = 'FeitoAMaoExcelDB_v4';
-            const IDB_STORE = 'kv';
-            const DEFAULT_FILENAME = 'produtos_feito_a_mao.xlsx';
-            const LOGO_CANDIDATES = ['logo.png', 'logo.jpg', 'logo.jpeg', 'logo.webp', 'logo.svg', 'Feito a mao.png', 'Feito à mão.png'];
+        // ==================== CONFIGURAÇÃO ====================
+        // Substitua pelos valores do seu projeto Supabase (Project Settings → API Keys)
+        const SUPABASE_URL = 'https://macnfahjnmbgqefncljs.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'sb_publishable_tjr59YakGnKR8ha_gmzucw_zoEitFYf';
+        const LOGO_CANDIDATES = ['logo.png', 'logo.jpg', 'logo.jpeg', 'logo.webp', 'logo.svg', 'Feito a mao.png', 'Feito à mão.png'];
 
-            const SALE_HEADERS = ['Pedido', 'Data', 'Hora', 'Cliente', 'Contato / Entrega', 'Atendente', 'Itens', 'Qtd Itens',
-                'Subtotal', 'Taxa Entrega', 'Desconto', 'Total', 'Forma Pagamento', 'Valor Recebido', 'Troco', 'Observações'];
-            const SALE_MONEY_COLS = [8, 9, 10, 11, 13, 14];
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const DEFAULT_SETTINGS = {
-                nome: '', cnpj: '', endereco: '', tel: '', atendente: '', rodape: '',
-                fontSize: 14, boldMode: true, logoBw: true, logoWidth: 155, orderNumber: 1, customLogo: null
+        let loja = null;
+        let produtos = [];
+        let itens = [];
+        let enviando = false;
+        let detectedLogo = null;
+        let badgeTimeout = null;
+
+        // ==================== UTILITÁRIOS ====================
+        const $ = (id) => document.getElementById(id);
+        const pad6 = (n) => String(n).padStart(6, '0');
+        const formatBRL = (v) => `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;
+        const round2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
+        const normalize = (s) => String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        function setLine(id, text) {
+            const el = $(id);
+            el.innerText = text || '';
+            el.classList.toggle('hidden', !text);
+        }
+        function showSaveBadge() {
+            const b = $('save-badge');
+            b.classList.remove('opacity-0');
+            clearTimeout(badgeTimeout);
+            badgeTimeout = setTimeout(() => b.classList.add('opacity-0'), 1800);
+        }
+        function showModal(titulo, texto, confirmar = false, onConfirm = null) {
+            $('modal-titulo').innerText = titulo;
+            $('modal-texto').innerText = texto;
+            $('modal-cancelar').classList.toggle('hidden', !confirmar);
+            const ok = $('modal-ok');
+            ok.innerText = confirmar ? 'Sim, confirmar' : 'Entendi';
+            ok.onclick = () => { fecharModal(); if (confirmar && onConfirm) onConfirm(); };
+            $('modal').classList.remove('hidden');
+            $('modal').classList.add('flex');
+        }
+        function fecharModal() {
+            $('modal').classList.add('hidden');
+            $('modal').classList.remove('flex');
+        }
+        function traduzErro(msg) {
+            const m = String(msg || '');
+            if (m.includes('Invalid login')) return 'E-mail ou senha incorretos.';
+            if (m.includes('already registered')) return 'Este e-mail já tem conta. Use Entrar.';
+            if (m.includes('Password should')) return 'A senha precisa ter pelo menos 6 caracteres.';
+            return m;
+        }
+        function mostrarTela(nome) {
+            $('tela-auth').classList.toggle('hidden', nome !== 'auth');
+            $('tela-app').classList.toggle('hidden', nome !== 'app');
+            $('tela-app').classList.toggle('flex', nome === 'app');
+        }
+        function alternarAuth(modo) {
+            $('form-login').classList.toggle('hidden', modo !== 'login');
+            $('form-cadastro').classList.toggle('hidden', modo !== 'cadastro');
+        }
+
+        // ==================== AUTENTICAÇÃO ====================
+        async function entrar() {
+            const email = $('auth-email').value.trim();
+            const senha = $('auth-senha').value;
+            if (!email || !senha) return showModal('Dados incompletos', 'Informe e-mail e senha.');
+            const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+            if (error) return showModal('Não foi possível entrar', traduzErro(error.message));
+            await iniciarApp();
+        }
+
+        async function criarConta() {
+            const nome = $('cad-nome').value.trim();
+            const email = $('cad-email').value.trim();
+            const senha = $('cad-senha').value;
+            const confirma = $('cad-confirma').value;
+
+            if (!nome) return showModal('Campo obrigatório', 'Informe o nome da loja.');
+            if (!email) return showModal('Campo obrigatório', 'Informe o e-mail.');
+            if (senha.length < 6) return showModal('Senha curta', 'A senha precisa ter pelo menos 6 caracteres.');
+            if (senha !== confirma) return showModal('Senhas diferentes', 'A confirmação de senha não confere.');
+
+            const { data, error } = await sb.auth.signUp({
+                email,
+                password: senha,
+                options: { data: { nome_loja: nome } }
+            });
+            if (error) return showModal('Erro ao criar conta', traduzErro(error.message));
+
+            if (!data.session) {
+                alternarAuth('login');
+                $('auth-email').value = email;
+                return showModal('Confirme seu e-mail', 'Enviamos um link de confirmação para o seu e-mail. Depois de confirmar, clique em Entrar.');
+            }
+            await iniciarApp();
+        }
+
+        async function sair() {
+            await sb.auth.signOut();
+            location.reload();
+        }
+
+        async function iniciarApp() {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) return mostrarTela('auth');
+
+            let { data, error } = await sb.from('lojas').select('*').eq('owner_id', session.user.id).maybeSingle();
+            if (error) return showModal('Erro ao carregar', error.message);
+
+            if (!data) {
+                const nomeLoja = session.user.user_metadata?.nome_loja || '';
+                const ins = await sb.from('lojas').insert({ owner_id: session.user.id, nome: nomeLoja }).select().single();
+                if (ins.error) return showModal('Erro ao criar loja', ins.error.message);
+                data = ins.data;
+            }
+
+            loja = data;
+            await carregarProdutos();
+            preencherLoja();
+            mostrarTela('app');
+            updateDateTime();
+            renderItens();
+            updateReceipt();
+        }
+
+        // ==================== LOJA ====================
+        function preencherLoja() {
+            $('header-loja').innerText = loja.nome || 'Emissor Térmico 80mm';
+            $('loja-nome').value = loja.nome || '';
+            $('loja-cnpj').value = loja.cnpj || '';
+            $('loja-telefone').value = loja.telefone || '';
+            $('loja-endereco').value = loja.endereco || '';
+            $('loja-atendente').value = loja.atendente || '';
+            $('loja-rodape').value = loja.rodape || '';
+            $('loja-chave-pix').value = loja.chave_pix || '';
+            $('loja-tipo-pix').value = loja.tipo_chave_pix || '';
+            $('loja-fontsize').value = loja.font_size || 14;
+            $('loja-fontsize-label').innerText = `${loja.font_size || 14}px`;
+            $('receipt-paper').style.fontSize = `${loja.font_size || 14}px`;
+            updateLogoStatus();
+            applyLogo();
+        }
+
+        async function salvarLoja() {
+            const patch = {
+                nome: $('loja-nome').value.trim(),
+                cnpj: $('loja-cnpj').value.trim(),
+                telefone: $('loja-telefone').value.trim(),
+                endereco: $('loja-endereco').value.trim(),
+                atendente: $('loja-atendente').value.trim(),
+                rodape: $('loja-rodape').value.trim(),
+                chave_pix: $('loja-chave-pix').value.trim(),
+                tipo_chave_pix: $('loja-tipo-pix').value,
+                font_size: parseInt($('loja-fontsize').value, 10) || 14
             };
+            const { error } = await sb.from('lojas').update(patch).eq('id', loja.id);
+            if (error) return showModal('Erro ao salvar', error.message);
+            Object.assign(loja, patch);
+            preencherLoja();
+            updateReceipt();
+            showModal('Dados salvos', 'As configurações da loja foram atualizadas.');
+        }
 
-            const SETTINGS_MAP = [
-                {key: 'nome', label: 'Nome Fantasia / Razão Social', type: 'text'},
-                {key: 'cnpj', label: 'CNPJ', type: 'text'},
-                {key: 'endereco', label: 'Endereço Completo', type: 'text'},
-                {key: 'tel', label: 'WhatsApp / Telefone', type: 'text'},
-                {key: 'atendente', label: 'Atendente / Confeiteira', type: 'text'},
-                {key: 'rodape', label: 'Mensagem de Rodapé', type: 'text'},
-                {key: 'fontSize', label: 'Tamanho da Fonte (px)', type: 'num'},
-                {key: 'boldMode', label: 'Negrito Reforçado (Sim/Não)', type: 'bool'},
-                {key: 'logoBw', label: 'Alto Contraste Logo (Sim/Não)', type: 'bool'},
-                {key: 'logoWidth', label: 'Largura da Logo (px)', type: 'num'},
-                {key: 'orderNumber', label: 'Próximo Nº do Pedido', type: 'num'}
-            ];
-
-            let state = {products: [], sales: [], settings: {...DEFAULT_SETTINGS}};
-            let receiptItems = [];
-            let linkedFileHandle = null;
-            let currentFilename = DEFAULT_FILENAME;
-            let detectedLogo = null;
-            let badgeTimeout = null;
-            let saveTimer = null;
-
-            // ==================== UTILITÁRIOS ====================
-            const $ = (id) => document.getElementById(id);
-
-            function escapeHtml(t) {
-                if (t === null || t === undefined) return '';
-                return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            }
-            function formatBRL(v) {return `R$ ${(Number(v) || 0).toFixed(2).replace('.', ',')}`;}
-            function round2(v) {return Math.round((Number(v) || 0) * 100) / 100;}
-            function normalize(s) {
-                return String(s || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            }
-            function toNumber(v) {
-                if (typeof v === 'number') return isFinite(v) ? v : 0;
-                const cleaned = String(v || '').replace(/R\$/gi, '').replace(/\s/g, '');
-                const withDot = cleaned.includes(',') ? cleaned.replace(/\./g, '').replace(',', '.') : cleaned;
-                return parseFloat(withDot) || 0;
-            }
-            function setLine(id, text) {
-                const el = $(id);
-                el.innerText = text || '';
-                el.classList.toggle('hidden', !text);
-            }
-            function showSaveBadge() {
-                const b = $('save-badge');
-                b.classList.remove('opacity-0');
-                clearTimeout(badgeTimeout);
-                badgeTimeout = setTimeout(() => b.classList.add('opacity-0'), 1800);
-            }
-
-            // ==================== MODAL ====================
-            function showModal(title, message, isConfirm = false, onConfirm = null) {
-                $('modal-title').innerText = title;
-                $('modal-message').innerText = message;
-                const cancelBtn = $('modal-cancel-btn');
-                const confirmBtn = $('modal-confirm-btn');
-                if (isConfirm) {
-                    cancelBtn.classList.remove('hidden');
-                    confirmBtn.innerText = 'Sim, Confirmar';
-                    confirmBtn.onclick = () => {closeModal(); if (onConfirm) onConfirm();};
-                } else {
-                    cancelBtn.classList.add('hidden');
-                    confirmBtn.innerText = 'Entendi';
-                    confirmBtn.onclick = closeModal;
-                }
-                $('custom-modal').classList.remove('hidden');
-                $('custom-modal').classList.add('flex');
-            }
-            function closeModal() {
-                $('custom-modal').classList.add('hidden');
-                $('custom-modal').classList.remove('flex');
-            }
-
-            // ==================== ARMAZENAMENTO ====================
-            function saveLocal() {
-                try {localStorage.setItem(LS_KEY, JSON.stringify(state));} catch (_) { }
-            }
-            function loadLocal() {
-                try {
-                    const raw = localStorage.getItem(LS_KEY);
-                    if (!raw) return;
-                    const d = JSON.parse(raw);
-                    state.products = Array.isArray(d.products) ? d.products : [];
-                    state.sales = Array.isArray(d.sales) ? d.sales : [];
-                    state.settings = {...DEFAULT_SETTINGS, ...(d.settings || {})};
-                } catch (_) { }
-            }
-            function openDB() {
-                return new Promise((resolve, reject) => {
-                    if (!window.indexedDB) return reject(new Error('sem IndexedDB'));
-                    const req = indexedDB.open(IDB_NAME, 1);
-                    req.onupgradeneeded = (e) => e.target.result.createObjectStore(IDB_STORE);
-                    req.onsuccess = (e) => resolve(e.target.result);
-                    req.onerror = (e) => reject(e.target.error);
-                });
-            }
-            async function kvSet(key, value) {
-                try {
-                    const db = await openDB();
-                    return new Promise((resolve) => {
-                        const tx = db.transaction(IDB_STORE, 'readwrite');
-                        tx.objectStore(IDB_STORE).put(value, key);
-                        tx.oncomplete = () => resolve(true);
-                        tx.onerror = () => resolve(false);
-                    });
-                } catch (_) {return false;}
-            }
-            async function kvGet(key) {
-                try {
-                    const db = await openDB();
-                    return new Promise((resolve) => {
-                        const tx = db.transaction(IDB_STORE, 'readonly');
-                        const r = tx.objectStore(IDB_STORE).get(key);
-                        r.onsuccess = () => resolve(r.result || null);
-                        r.onerror = () => resolve(null);
-                    });
-                } catch (_) {return null;}
-            }
-
-            // ==================== LOGO AUTOMÁTICA (MESMA PASTA DO HTML) ====================
-            function detectLogo() {
-                return new Promise((resolve) => {
-                    let i = 0;
-                    const next = () => {
-                        if (i >= LOGO_CANDIDATES.length) return resolve(null);
-                        const name = LOGO_CANDIDATES[i++];
-                        const img = new Image();
-                        img.onload = () => resolve(name);
-                        img.onerror = next;
-                        img.src = encodeURI(name);
-                    };
-                    next();
-                });
-            }
-            function currentLogoSrc() {
-                if (state.settings.customLogo) return state.settings.customLogo;
-                return detectedLogo ? encodeURI(detectedLogo) : null;
-            }
-            function applyLogo() {
-                const img = $('receipt-logo');
-                const src = currentLogoSrc();
-                if (src) {
-                    img.src = src;
-                    img.classList.remove('hidden');
-                } else {
-                    img.removeAttribute('src');
-                    img.classList.add('hidden');
-                }
-                updateLogoStatus();
-            }
-            function updateLogoStatus() {
-                const el = $('logo-status');
-                if (state.settings.customLogo) el.innerText = 'Usando imagem enviada manualmente.';
-                else if (detectedLogo) el.innerText = `Logo carregada da pasta: ${detectedLogo}`;
-                else el.innerText = 'Nenhuma logo encontrada. Coloque logo.png na mesma pasta deste HTML.';
-            }
-
-            // ==================== PLANILHA ====================
-            function hasSheetJS() {return typeof window.XLSX !== 'undefined' && window.XLSX.utils;}
-
-            function moneyFormat(ws, col, n) {
-                for (let r = 1; r <= n; r++) {
-                    const ref = XLSX.utils.encode_cell({r, c: col});
-                    if (ws[ref]) ws[ref].z = '"R$" #,##0.00';
-                }
-            }
-
-            function buildWorkbook() {
-                const wb = XLSX.utils.book_new();
-
-                const pRows = state.products.map(p => ({
-                    Codigo: p.codigo || '', Produto: p.nome || '', Categoria: p.categoria || '', Preco: Number(p.valor) || 0
-                }));
-                const wsP = XLSX.utils.json_to_sheet(pRows, {header: ['Codigo', 'Produto', 'Categoria', 'Preco']});
-                wsP['!cols'] = [{wch: 12}, {wch: 36}, {wch: 20}, {wch: 14}];
-                moneyFormat(wsP, 3, pRows.length);
-                XLSX.utils.book_append_sheet(wb, wsP, 'Produtos');
-
-                const wsV = XLSX.utils.json_to_sheet(state.sales, {header: SALE_HEADERS});
-                wsV['!cols'] = SALE_HEADERS.map((h) => ({
-                    wch: h === 'Itens' ? 50 : (h === 'Contato / Entrega' || h === 'Observações') ? 28 : 14
-                }));
-                SALE_MONEY_COLS.forEach(c => moneyFormat(wsV, c, state.sales.length));
-                XLSX.utils.book_append_sheet(wb, wsV, 'Vendas');
-
-                const cRows = SETTINGS_MAP.map(m => ({
-                    Campo: m.label,
-                    Valor: m.type === 'bool' ? (state.settings[m.key] ? 'Sim' : 'Não') : (state.settings[m.key] ?? '')
-                }));
-                const wsC = XLSX.utils.json_to_sheet(cRows, {header: ['Campo', 'Valor']});
-                wsC['!cols'] = [{wch: 36}, {wch: 50}];
-                XLSX.utils.book_append_sheet(wb, wsC, 'Configurações');
-
-                return wb;
-            }
-
-            function buildBuffer() {
-                return XLSX.write(buildWorkbook(), {bookType: 'xlsx', type: 'array'});
-            }
-
-            async function writeLinked(buf, allowPrompt) {
-                if (!linkedFileHandle) return false;
-                try {
-                    let perm = await linkedFileHandle.queryPermission({mode: 'readwrite'});
-                    if (perm !== 'granted' && allowPrompt) {
-                        perm = await linkedFileHandle.requestPermission({mode: 'readwrite'});
-                    }
-                    if (perm !== 'granted') return false;
-                    const w = await linkedFileHandle.createWritable();
-                    await w.write(buf);
-                    await w.close();
-                    return true;
-                } catch (_) {return false;}
-            }
-
-            // Grava na planilha: direto no arquivo vinculado, ou baixa se não houver vínculo
-            async function saveWorkbook(allowPrompt) {
-                const wb = buildWorkbook();
-                const buf = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
-                if (linkedFileHandle && await writeLinked(buf, allowPrompt)) {
-                    return `gravada em ${currentFilename}`;
-                }
-                if (allowPrompt) {
-                    XLSX.writeFile(wb, currentFilename);
-                    return 'baixada (sem arquivo vinculado)';
-                }
-                return null;
-            }
-
-            function scheduleSave() {
-                clearTimeout(saveTimer);
-                saveTimer = setTimeout(async () => {
-                    saveLocal();
-                    if (linkedFileHandle) await writeLinked(buildBuffer(), false);
-                    showSaveBadge();
-                }, 500);
-            }
-
-            function parseProducts(rows) {
-                return rows.map((row, idx) => {
-                    const keys = Object.keys(row);
-                    const get = (...cands) => {
-                        for (const c of cands) {
-                            const k = keys.find(k => normalize(k) === c);
-                            if (k !== undefined && row[k] !== '') return row[k];
-                        }
-                        return '';
-                    };
-                    const nome = String(get('produto', 'nome', 'descricao', 'item')).trim();
-                    if (!nome) return null;
-                    return {
-                        codigo: String(get('codigo', 'cod', 'id') || '').trim(),
-                        nome,
-                        categoria: String(get('categoria', 'grupo', 'tipo') || '').trim(),
-                        valor: toNumber(get('preco', 'valor', 'preco unitario', 'valor unitario'))
-                    };
-                }).filter(Boolean);
-            }
-
-            function parseSettings(rows) {
-                const out = {};
-                rows.forEach(r => {
-                    const m = SETTINGS_MAP.find(x => x.label === String(r['Campo'] || '').trim());
-                    if (!m) return;
-                    const v = r['Valor'];
-                    if (m.type === 'bool') out[m.key] = ['sim', 's', 'true', '1'].includes(normalize(v));
-                    else if (m.type === 'num') out[m.key] = toNumber(v) || DEFAULT_SETTINGS[m.key];
-                    else out[m.key] = String(v ?? '');
-                });
-                return out;
-            }
-
-            function importWorkbook(wb) {
-                const findSheet = (prefix) => wb.SheetNames.find(n => normalize(n).startsWith(prefix));
-                const rowsOf = (name) => XLSX.utils.sheet_to_json(wb.Sheets[name], {defval: ''});
-
-                const pName = findSheet('produt') || wb.SheetNames[0];
-                if (!pName) return false;
-                const products = parseProducts(rowsOf(pName));
-
-                const vName = findSheet('vend');
-                const sales = vName ? rowsOf(vName)
-                    .filter(r => String(r['Pedido'] ?? '').trim() !== '' || String(r['Cliente'] ?? '').trim() !== '')
-                    .map(r => {
-                        const s = {};
-                        SALE_HEADERS.forEach(h => {
-                            const v = r[h] ?? '';
-                            s[h] = SALE_MONEY_COLS.includes(SALE_HEADERS.indexOf(h)) ? toNumber(v) : String(v);
-                        });
-                        return s;
-                    }) : null;
-
-                const cName = findSheet('config');
-                const settings = cName ? parseSettings(rowsOf(cName)) : null;
-
-                state.products = products;
-                if (sales) state.sales = sales;
-                if (settings) state.settings = {...state.settings, ...settings};
-
-                // Próximo pedido nunca fica abaixo do maior número já registrado
-                const maxPedido = state.sales.reduce((m, s) => Math.max(m, parseInt(s.Pedido, 10) || 0), 0);
-                if (maxPedido >= state.settings.orderNumber) state.settings.orderNumber = maxPedido + 1;
-                return true;
-            }
-
-            async function applyImportedBuffer(buf, handle, name) {
-                const wb = XLSX.read(buf, {type: 'array'});
-                if (!importWorkbook(wb)) {
-                    showModal('Planilha Inválida', 'Não foi possível encontrar produtos nesta planilha.');
-                    return;
-                }
-                linkedFileHandle = handle || null;
-                currentFilename = name || DEFAULT_FILENAME;
-                await kvSet('fileHandle', handle || null);
-                saveLocal();
-                applySettingsToUI();
-                renderCatalogUI();
-                updateSalesCount();
-                updateXlsxStatus();
-                showModal('Planilha Carregada!', `${state.products.length} produto(s) e ${state.sales.length} venda(s) carregados de "${currentFilename}".`);
-            }
-
-            async function handleImport() {
-                if (!hasSheetJS()) {
-                    showModal('Aguardando Biblioteca Excel', 'A biblioteca SheetJS ainda está carregando. Tente novamente em 2 segundos.');
-                    return;
-                }
-                if (typeof window.showOpenFilePicker === 'function' && window.self === window.top) {
-                    try {
-                        const [handle] = await window.showOpenFilePicker({
-                            types: [{description: 'Planilha Excel (.xlsx)', accept: {'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']}}],
-                            multiple: false
-                        });
-                        const file = await handle.getFile();
-                        await applyImportedBuffer(await file.arrayBuffer(), handle, file.name);
-                        return;
-                    } catch (err) {
-                        if (err && err.name === 'AbortError') return;
-                    }
-                }
-                $('xlsx-file-input').click();
-            }
-
-            async function onFallbackXlsxSelected(e) {
-                const file = e.target.files && e.target.files[0];
-                if (!file) return;
-                try {
-                    await applyImportedBuffer(await file.arrayBuffer(), null, file.name);
-                } catch (_) {
-                    showModal('Erro na Leitura', 'Não foi possível ler este arquivo. Verifique se é uma planilha .xlsx válida.');
-                } finally {
-                    e.target.value = '';
-                }
-            }
-
-            async function restoreLinkedFile() {
-                const handle = await kvGet('fileHandle');
-                if (!handle) return;
-                linkedFileHandle = handle;
-                currentFilename = handle.name || DEFAULT_FILENAME;
-                try {
-                    if (await handle.queryPermission({mode: 'readwrite'}) === 'granted') {
-                        const file = await handle.getFile();
-                        importWorkbook(XLSX.read(await file.arrayBuffer(), {type: 'array'}));
-                    }
-                } catch (_) { }
-            }
-
-            function updateXlsxStatus() {
-                $('xlsx-status-text').innerText = linkedFileHandle
-                    ? `Vinculada a "${currentFilename}". Ao imprimir, a venda é gravada automaticamente.`
-                    : 'Sem arquivo vinculado. Ao imprimir, a planilha será baixada com a venda.';
-            }
-            function updateSalesCount() {$('sales-count').innerText = state.sales.length;}
-
-            async function persistNow() {
-                saveLocal();
-                if (linkedFileHandle) await writeLinked(buildBuffer(), false);
-                showSaveBadge();
-            }
-
-            // ==================== ABAS E CONFIGURAÇÕES ====================
-            function switchTab(tabName) {
-                document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
-                const target = $(`tab-${tabName}`);
-                if (target) target.classList.remove('hidden');
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    const active = btn.getAttribute('data-tab') === tabName;
-                    btn.classList.toggle('bg-white', active);
-                    btn.classList.toggle('text-slate-900', active);
-                    btn.classList.toggle('shadow-xs', active);
-                    btn.classList.toggle('text-slate-600', !active);
-                });
-            }
-
-            function setFontSize(val, persist = true) {
-                const size = Math.min(22, Math.max(11, parseInt(val, 10) || 14));
-                state.settings.fontSize = size;
-                $('input-fontsize').value = size;
-                $('font-size-label').innerText = `${size}px`;
-                $('preview-badge-font').innerText = `${size}px`;
-                $('receipt-paper').style.fontSize = `${size}px`;
-                if (persist) onSettingsChanged();
-            }
-
-            function updateLogoSize(val, persist = true) {
-                const w = Math.min(240, Math.max(80, parseInt(val, 10) || 155));
-                state.settings.logoWidth = w;
-                $('input-logo-width').value = w;
-                $('logo-width-label').innerText = `${w}px`;
-                $('receipt-logo').style.width = `${w}px`;
-                if (persist) onSettingsChanged();
-            }
-
-            function toggleLogoFilter(persist = true) {
-                state.settings.logoBw = $('input-logo-bw').checked;
-                $('receipt-logo').classList.toggle('thermal-bw', state.settings.logoBw);
-                if (persist) onSettingsChanged();
-            }
-
-            function readSettingsFromUI() {
-                state.settings = {
-                    ...state.settings,
-                    nome: $('input-nome').value,
-                    cnpj: $('input-cnpj').value,
-                    tel: $('input-tel').value,
-                    endereco: $('input-endereco').value,
-                    atendente: $('input-atendente').value,
-                    rodape: $('input-rodape').value,
-                    boldMode: $('input-bold-mode').checked,
-                    logoBw: $('input-logo-bw').checked,
-                    logoWidth: parseInt($('input-logo-width').value, 10) || 155
+        // ==================== LOGO (MESMA PASTA DO HTML) ====================
+        function detectLogo() {
+            return new Promise((resolve) => {
+                let i = 0;
+                const next = () => {
+                    if (i >= LOGO_CANDIDATES.length) return resolve(null);
+                    const name = LOGO_CANDIDATES[i++];
+                    const img = new Image();
+                    img.onload = () => resolve(name);
+                    img.onerror = next;
+                    img.src = encodeURI(name);
                 };
+                next();
+            });
+        }
+        function applyLogo() {
+            const img = $('receipt-logo');
+            if (detectedLogo) {
+                img.src = encodeURI(detectedLogo);
+                img.classList.remove('hidden');
+            } else {
+                img.classList.add('hidden');
+            }
+            updateLogoStatus();
+        }
+        function updateLogoStatus() {
+            $('logo-status').innerText = detectedLogo
+                ? `Logo carregada da pasta: ${detectedLogo}`
+                : 'Nenhuma logo encontrada. Coloque logo.png na mesma pasta deste arquivo.';
+        }
+
+        // ==================== PRODUTOS ====================
+        async function carregarProdutos() {
+            const { data, error } = await sb.from('produtos').select('*').eq('loja_id', loja.id).order('nome');
+            if (error) return showModal('Erro ao carregar produtos', error.message);
+            produtos = data || [];
+            renderProdutos();
+        }
+
+        function renderProdutos() {
+            const quick = $('quick-produtos');
+            quick.innerHTML = '';
+            if (produtos.length === 0) {
+                quick.innerHTML = `<span class="text-xs text-slate-400 italic">Nenhum produto. Importe a planilha ou cadastre na aba Produtos.</span>`;
+            } else {
+                produtos.forEach((p) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'text-xs bg-white hover:bg-amber-800 hover:text-white text-slate-800 border border-slate-300 hover:border-amber-800 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer';
+                    b.innerHTML = `<span class="font-medium">${esc(p.nome)}</span><span class="text-[11px] opacity-75 font-semibold">R$${Number(p.preco).toFixed(2)}</span>`;
+                    b.addEventListener('click', () => adicionarProduto(p));
+                    quick.appendChild(b);
+                });
             }
 
-            function onSettingsChanged() {
-                readSettingsFromUI();
-                updateReceipt();
-                scheduleSave();
+            const termo = normalize($('prod-busca').value);
+            const lista = $('lista-produtos');
+            lista.innerHTML = '';
+            $('prod-count').innerText = produtos.length;
+            const filtrados = produtos.filter(p => !termo || normalize(p.nome).includes(termo) || normalize(p.codigo).includes(termo) || normalize(p.categoria).includes(termo));
+            if (!filtrados.length) {
+                lista.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Nenhum produto encontrado.</div>`;
+                return;
             }
-
-            function applySettingsToUI() {
-                const s = state.settings;
-                $('input-nome').value = s.nome || '';
-                $('input-cnpj').value = s.cnpj || '';
-                $('input-tel').value = s.tel || '';
-                $('input-endereco').value = s.endereco || '';
-                $('input-atendente').value = s.atendente || '';
-                $('input-rodape').value = s.rodape || '';
-                $('input-bold-mode').checked = !!s.boldMode;
-                $('input-logo-bw').checked = !!s.logoBw;
-                $('receipt-logo').classList.toggle('thermal-bw', !!s.logoBw);
-                $('input-logo-width').value = s.logoWidth;
-                $('logo-width-label').innerText = `${s.logoWidth}px`;
-                $('receipt-logo').style.width = `${s.logoWidth}px`;
-                setFontSize(s.fontSize, false);
-                applyLogo();
-                updateReceipt();
-            }
-
-            function updateDateTime() {
-                const now = new Date();
-                const pad = (n) => String(n).padStart(2, '0');
-                $('rcpt-data').innerText = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            }
-
-            // ==================== CATÁLOGO ====================
-            function renderCatalogUI() {
-                const quick = $('quick-catalog-list');
-                quick.innerHTML = '';
-                if (state.products.length === 0) {
-                    quick.innerHTML = `<span class="text-xs text-slate-400 italic">Nenhum produto. Importe a planilha ou cadastre na aba Planilha.</span>`;
-                } else {
-                    state.products.forEach((prod, idx) => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'text-xs bg-white hover:bg-amber-800 hover:text-white text-slate-800 border border-slate-300 hover:border-amber-800 px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer';
-                        btn.innerHTML = `<i class="fa-solid fa-plus text-[10px] opacity-70"></i><span class="font-medium">${escapeHtml(prod.nome)}</span><span class="text-[11px] opacity-75 font-semibold">R$${Number(prod.valor).toFixed(2)}</span>`;
-                        btn.addEventListener('click', () => addProductToReceipt(idx));
-                        quick.appendChild(btn);
-                    });
-                }
-
-                const list = $('catalog-list-container');
-                const term = ($('catalog-search').value || '').trim().toLowerCase();
-                $('catalog-count').innerText = state.products.length;
-                list.innerHTML = '';
-
-                const filtered = state.products.map((prod, idx) => ({prod, idx})).filter(({prod}) =>
-                    !term || prod.nome.toLowerCase().includes(term) ||
-                    (prod.codigo || '').toLowerCase().includes(term) ||
-                    (prod.categoria || '').toLowerCase().includes(term));
-
-                if (filtered.length === 0) {
-                    list.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Nenhum produto encontrado.</div>`;
-                    return;
-                }
-
-                filtered.forEach(({prod, idx}) => {
-                    const card = document.createElement('div');
-                    card.className = 'flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-2xs gap-2';
-                    card.innerHTML = `
+            filtrados.forEach((p) => {
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 gap-2';
+                card.innerHTML = `
                     <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${escapeHtml(prod.codigo)}</span>
-                            <span class="text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded font-medium">${escapeHtml(prod.categoria)}</span>
+                        <div class="flex gap-1.5">
+                            <span class="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${esc(p.codigo)}</span>
+                            <span class="text-[10px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded">${esc(p.categoria)}</span>
                         </div>
-                        <div class="text-xs font-bold text-slate-800 truncate mt-1">${escapeHtml(prod.nome)}</div>
-                        <div class="text-xs text-emerald-700 font-bold">R$ ${Number(prod.valor).toFixed(2)}</div>
+                        <div class="text-xs font-bold truncate mt-1">${esc(p.nome)}</div>
+                        <div class="text-xs text-emerald-700 font-bold">R$ ${Number(p.preco).toFixed(2)}</div>
                     </div>
                     <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" data-action="add-note" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer">+ Nota</button>
-                        <button type="button" data-action="edit" class="p-2 text-slate-500 hover:text-amber-800 transition-colors cursor-pointer" title="Editar"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button type="button" data-action="delete" class="p-2 text-slate-400 hover:text-red-600 transition-colors cursor-pointer" title="Excluir"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <button type="button" data-a="nota" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg text-xs font-semibold cursor-pointer">+ Nota</button>
+                        <button type="button" data-a="editar" class="p-2 text-slate-500 hover:text-amber-800 cursor-pointer"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button type="button" data-a="excluir" class="p-2 text-slate-400 hover:text-red-600 cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>`;
-                    card.querySelector('[data-action="add-note"]').addEventListener('click', () => {addProductToReceipt(idx); switchTab('nota');});
-                    card.querySelector('[data-action="edit"]').addEventListener('click', () => editProduct(idx));
-                    card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteProduct(idx));
-                    list.appendChild(card);
-                });
+                card.querySelector('[data-a="nota"]').addEventListener('click', () => { adicionarProduto(p); trocarAba('nota'); });
+                card.querySelector('[data-a="editar"]').addEventListener('click', () => editarProduto(p));
+                card.querySelector('[data-a="excluir"]').addEventListener('click', () => excluirProduto(p));
+                lista.appendChild(card);
+            });
+        }
+
+        async function salvarProduto() {
+            const nome = $('prod-nome').value.trim();
+            const preco = parseFloat($('prod-preco').value);
+            if (!nome) return showModal('Campo obrigatório', 'Digite o nome do produto.');
+            if (isNaN(preco) || preco < 0) return showModal('Preço inválido', 'Informe um preço válido.');
+
+            const codigo = $('prod-codigo').value.trim() || `PROD-${Date.now().toString(36).toUpperCase()}`;
+            const row = { loja_id: loja.id, codigo, nome, categoria: $('prod-categoria').value.trim(), preco: round2(preco) };
+            if ($('prod-id').value) row.id = $('prod-id').value;
+
+            const { error } = await sb.from('produtos').upsert(row, { onConflict: 'loja_id,codigo' });
+            if (error) return showModal('Erro ao salvar produto', error.message);
+            resetFormProduto();
+            await carregarProdutos();
+            showSaveBadge();
+        }
+
+        function editarProduto(p) {
+            $('prod-id').value = p.id;
+            $('prod-codigo').value = p.codigo;
+            $('prod-nome').value = p.nome;
+            $('prod-preco').value = Number(p.preco).toFixed(2);
+            $('prod-categoria').value = p.categoria || '';
+            $('prod-titulo').innerText = 'Editando Produto';
+            $('btn-cancelar-prod').classList.remove('hidden');
+            $('prod-nome').focus();
+        }
+
+        function resetFormProduto() {
+            ['prod-id', 'prod-codigo', 'prod-nome', 'prod-preco', 'prod-categoria'].forEach(id => $(id).value = '');
+            $('prod-titulo').innerText = 'Cadastrar Produto';
+            $('btn-cancelar-prod').classList.add('hidden');
+        }
+
+        function excluirProduto(p) {
+            showModal('Excluir produto', `Remover "${p.nome}" da lista?`, true, async () => {
+                const { error } = await sb.from('produtos').delete().eq('id', p.id);
+                if (error) return showModal('Erro ao excluir', error.message);
+                await carregarProdutos();
+            });
+        }
+
+        async function importarPlanilha(file) {
+            const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+            const mapa = new Map();
+            rows.forEach((r, i) => {
+                const get = (...cands) => {
+                    for (const k of Object.keys(r)) {
+                        if (cands.includes(normalize(k)) && r[k] !== '') return r[k];
+                    }
+                    return '';
+                };
+                const nome = String(get('produto', 'nome', 'descricao', 'item')).trim();
+                if (!nome) return;
+                const rawPreco = get('preco', 'valor', 'preco unitario', 'valor unitario');
+                const preco = typeof rawPreco === 'number' ? rawPreco
+                    : parseFloat(String(rawPreco).replace(/R\$/gi, '').replace(/\./g, '').replace(',', '.')) || 0;
+                const codigo = String(get('codigo', 'cod', 'id') || '').trim() || `IMP-${Date.now().toString(36)}-${i}`;
+                mapa.set(codigo, { loja_id: loja.id, codigo, nome, categoria: String(get('categoria', 'grupo', 'tipo') || '').trim(), preco: round2(preco) });
+            });
+
+            const payload = [...mapa.values()];
+            if (!payload.length) return showModal('Planilha vazia', 'Nenhum produto válido. Verifique as colunas Produto e Preco.');
+
+            const { error } = await sb.from('produtos').upsert(payload, { onConflict: 'loja_id,codigo' });
+            if (error) return showModal('Erro na importação', error.message);
+            await carregarProdutos();
+            showModal('Importação concluída', `${payload.length} produto(s) importado(s) ou atualizado(s).`);
+        }
+
+        function exportarPlanilha() {
+            const rows = produtos.map(p => ({ Codigo: p.codigo, Produto: p.nome, Categoria: p.categoria, Preco: Number(p.preco) }));
+            const ws = XLSX.utils.json_to_sheet(rows, { header: ['Codigo', 'Produto', 'Categoria', 'Preco'] });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
+            XLSX.writeFile(wb, 'produtos_feito_a_mao.xlsx');
+        }
+
+        // ==================== NOTA ====================
+        function adicionarProduto(p) {
+            const existente = itens.find(i => i.produto_id === p.id);
+            if (existente) existente.qtd += 1;
+            else itens.push({ produto_id: p.id, nome: p.nome, qtd: 1, valor: Number(p.preco) });
+            renderItens();
+            updateReceipt();
+        }
+
+        function renderItens() {
+            const c = $('items-editor');
+            c.innerHTML = '';
+            if (!itens.length) {
+                c.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">Nenhum item. Clique em um produto acima ou em "+ Item Avulso".</div>`;
+                return;
             }
-
-            async function saveProduct() {
-                const nome = $('catalog-prod-nome').value.trim();
-                const valor = parseFloat($('catalog-prod-valor').value);
-                const categoria = $('catalog-prod-categoria').value.trim();
-                const editIdx = parseInt($('catalog-edit-index').value, 10);
-
-                if (!nome) return showModal('Campo Obrigatório', 'Digite o nome do produto antes de salvar.');
-                if (isNaN(valor) || valor < 0) return showModal('Valor Inválido', 'Informe um preço unitário válido.');
-
-                const codigo = $('catalog-prod-codigo').value.trim() ||
-                    (editIdx >= 0 && state.products[editIdx]?.codigo) ||
-                    `PROD-${String(state.products.length + 1).padStart(3, '0')}`;
-
-                const prod = {codigo, nome, categoria, valor};
-                if (editIdx >= 0 && editIdx < state.products.length) state.products[editIdx] = prod;
-                else state.products.push(prod);
-
-                await persistNow();
-                resetProductForm();
-                renderCatalogUI();
-            }
-
-            function editProduct(index) {
-                const p = state.products[index];
-                if (!p) return;
-                $('catalog-edit-index').value = index;
-                $('catalog-prod-codigo').value = p.codigo || '';
-                $('catalog-prod-nome').value = p.nome;
-                $('catalog-prod-valor').value = Number(p.valor).toFixed(2);
-                $('catalog-prod-categoria').value = p.categoria || '';
-                $('catalog-form-title').innerText = 'Editando Produto';
-                $('catalog-submit-text').innerText = 'Atualizar Produto';
-                $('catalog-cancel-edit').classList.remove('hidden');
-                $('catalog-prod-nome').focus();
-            }
-
-            function resetProductForm() {
-                $('catalog-edit-index').value = '-1';
-                ['catalog-prod-codigo', 'catalog-prod-nome', 'catalog-prod-valor', 'catalog-prod-categoria'].forEach(id => $(id).value = '');
-                $('catalog-form-title').innerText = 'Cadastrar Novo Produto';
-                $('catalog-submit-text').innerText = 'Adicionar Produto';
-                $('catalog-cancel-edit').classList.add('hidden');
-            }
-
-            function deleteProduct(index) {
-                const p = state.products[index];
-                if (!p) return;
-                showModal('Excluir Produto', `Deseja remover "${p.nome}" da planilha?`, true, async () => {
-                    state.products.splice(index, 1);
-                    await persistNow();
-                    renderCatalogUI();
-                });
-            }
-
-            function addProductToReceipt(idx) {
-                const p = state.products[idx];
-                if (!p) return;
-                const existing = receiptItems.find(i => i.nome.toLowerCase() === p.nome.toLowerCase() && Math.abs(i.valor - p.valor) < 0.001);
-                if (existing) existing.qtd += 1;
-                else receiptItems.push({nome: p.nome, qtd: 1, valor: Number(p.valor)});
-                renderEditorItems();
-                updateReceipt();
-            }
-
-            // ==================== ITENS DA NOTA ====================
-            function renderEditorItems() {
-                const c = $('items-editor-container');
-                c.innerHTML = '';
-                if (receiptItems.length === 0) {
-                    c.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">Nenhum item na nota. Clique em um produto acima ou em "+ Item Avulso".</div>`;
-                    return;
-                }
-                receiptItems.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'flex gap-2 items-center bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs';
-                    div.innerHTML = `
+            itens.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'flex gap-2 items-center bg-white p-2.5 rounded-xl border border-slate-200';
+                div.innerHTML = `
                     <div class="flex-1 space-y-1.5">
-                        <input type="text" data-field="nome" value="${escapeHtml(item.nome)}" class="w-full text-xs font-semibold px-2.5 py-1.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-amber-600 focus:outline-none" placeholder="Descrição do item">
+                        <input type="text" data-f="nome" value="${esc(item.nome)}" placeholder="Descrição do item" class="w-full text-xs font-semibold px-2.5 py-1.5 border border-slate-300 rounded-lg focus:outline-none">
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <span class="text-[10px] font-medium text-slate-500 block">Quantidade:</span>
-                                <input type="number" data-field="qtd" min="1" step="1" value="${item.qtd}" class="w-full text-xs px-2 py-1 border border-slate-300 rounded-lg focus:ring-1 focus:ring-amber-600 focus:outline-none">
-                            </div>
-                            <div>
-                                <span class="text-[10px] font-medium text-slate-500 block">Preço Unit. (R$):</span>
-                                <input type="number" data-field="valor" step="0.50" min="0" value="${Number(item.valor).toFixed(2)}" class="w-full text-xs px-2 py-1 border border-slate-300 rounded-lg focus:ring-1 focus:ring-amber-600 focus:outline-none">
-                            </div>
+                            <div><span class="text-[10px] text-slate-500 block">Quantidade:</span>
+                                <input type="number" data-f="qtd" min="1" step="1" value="${item.qtd}" class="w-full text-xs px-2 py-1 border border-slate-300 rounded-lg focus:outline-none"></div>
+                            <div><span class="text-[10px] text-slate-500 block">Preço Unit. (R$):</span>
+                                <input type="number" data-f="valor" step="0.50" min="0" value="${Number(item.valor).toFixed(2)}" class="w-full text-xs px-2 py-1 border border-slate-300 rounded-lg focus:outline-none"></div>
                         </div>
                     </div>
-                    <button type="button" data-action="remove" class="text-slate-400 hover:text-red-600 p-2 transition-colors cursor-pointer" title="Remover item">
-                        <i class="fa-solid fa-trash-can text-sm"></i>
-                    </button>`;
-                    div.querySelector('[data-field="nome"]').addEventListener('input', e => {receiptItems[index].nome = e.target.value; updateReceipt();});
-                    div.querySelector('[data-field="qtd"]').addEventListener('input', e => {receiptItems[index].qtd = parseFloat(e.target.value) || 0; updateReceipt();});
-                    div.querySelector('[data-field="valor"]').addEventListener('input', e => {receiptItems[index].valor = parseFloat(e.target.value) || 0; updateReceipt();});
-                    div.querySelector('[data-action="remove"]').addEventListener('click', () => {
-                        receiptItems.splice(index, 1);
-                        renderEditorItems();
-                        updateReceipt();
-                    });
-                    c.appendChild(div);
-                });
+                    <button type="button" class="text-slate-400 hover:text-red-600 p-2 cursor-pointer" title="Remover"><i class="fa-solid fa-trash-can text-sm"></i></button>`;
+                div.querySelector('[data-f="nome"]').addEventListener('input', e => { itens[idx].nome = e.target.value; updateReceipt(); });
+                div.querySelector('[data-f="qtd"]').addEventListener('input', e => { itens[idx].qtd = parseFloat(e.target.value) || 0; updateReceipt(); });
+                div.querySelector('[data-f="valor"]').addEventListener('input', e => { itens[idx].valor = parseFloat(e.target.value) || 0; updateReceipt(); });
+                div.querySelector('button').addEventListener('click', () => { itens.splice(idx, 1); renderItens(); updateReceipt(); });
+                c.appendChild(div);
+            });
+        }
+
+        function getTotals() {
+            const subtotal = itens.reduce((s, i) => s + (Number(i.qtd) || 0) * (Number(i.valor) || 0), 0);
+            const entrega = parseFloat($('input-entrega').value) || 0;
+            const desconto = parseFloat($('input-desconto').value) || 0;
+            const total = Math.max(0, subtotal + entrega - desconto);
+            const rec = parseFloat($('input-recebido').value);
+            const recebido = isNaN(rec) || rec <= 0 ? 0 : rec;
+            const troco = recebido > 0 ? Math.max(0, recebido - total) : 0;
+            return { subtotal, entrega, desconto, total, recebido, troco };
+        }
+
+        function updateDateTime(dt = new Date()) {
+            const p = (n) => String(n).padStart(2, '0');
+            $('rcpt-data').innerText = `${p(dt.getDate())}/${p(dt.getMonth() + 1)}/${dt.getFullYear()} ${p(dt.getHours())}:${p(dt.getMinutes())}`;
+        }
+
+        function updateReceipt() {
+            $('rcpt-nome').innerText = $('loja-nome').value;
+            setLine('rcpt-cnpj', $('loja-cnpj').value ? `CNPJ: ${$('loja-cnpj').value}` : '');
+            setLine('rcpt-endereco', $('loja-endereco').value);
+            setLine('rcpt-tel', $('loja-telefone').value ? `WhatsApp: ${$('loja-telefone').value}` : '');
+
+            const atend = $('loja-atendente').value.trim();
+            $('rcpt-atendente').innerText = atend;
+            $('rcpt-atendente-row').classList.toggle('hidden', !atend);
+
+            const cliente = $('input-cliente').value.trim();
+            const info = $('input-cliente-info').value.trim();
+            $('rcpt-cliente').innerText = cliente;
+            $('rcpt-cliente-row').classList.toggle('hidden', !cliente && !info);
+            setLine('rcpt-cliente-info', info);
+
+            if (!$('rcpt-numero').dataset.fixo) {
+                $('rcpt-numero').innerText = pad6(loja ? loja.proximo_pedido : 1);
             }
 
-            // ==================== TOTAIS E VENDA ====================
-            function getTotals() {
-                const subtotal = receiptItems.reduce((s, i) => s + (Number(i.qtd) || 0) * (Number(i.valor) || 0), 0);
-                const entrega = parseFloat($('input-entrega').value) || 0;
-                const desconto = parseFloat($('input-desconto').value) || 0;
-                const total = Math.max(0, subtotal + entrega - desconto);
-                const rec = parseFloat($('input-recebido').value);
-                const recebido = isNaN(rec) || rec <= 0 ? 0 : rec;
-                const troco = recebido > 0 ? Math.max(0, recebido - total) : 0;
-                const qtd = receiptItems.reduce((s, i) => s + (Number(i.qtd) || 0), 0);
-                return {subtotal, entrega, desconto, total, recebido, troco, qtd};
-            }
-
-            function buildSale(t) {
-                const now = new Date();
-                const pad = (n) => String(n).padStart(2, '0');
-                return {
-                    'Pedido': String(state.settings.orderNumber).padStart(6, '0'),
-                    'Data': `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`,
-                    'Hora': `${pad(now.getHours())}:${pad(now.getMinutes())}`,
-                    'Cliente': $('input-cliente').value.trim(),
-                    'Contato / Entrega': $('input-cliente-info').value.trim(),
-                    'Atendente': $('input-atendente').value.trim(),
-                    'Itens': receiptItems.map(i => `${i.qtd}x ${i.nome} (${formatBRL(i.valor)})`).join('; '),
-                    'Qtd Itens': t.qtd,
-                    'Subtotal': round2(t.subtotal),
-                    'Taxa Entrega': round2(t.entrega),
-                    'Desconto': round2(t.desconto),
-                    'Total': round2(t.total),
-                    'Forma Pagamento': $('input-pagamento').value,
-                    'Valor Recebido': round2(t.recebido),
-                    'Troco': round2(t.troco),
-                    'Observações': $('input-obs').value.trim()
-                };
-            }
-
-            // ==================== CUPOM ====================
-            function updateReceipt() {
-                $('receipt-paper').classList.toggle('font-bold', $('input-bold-mode').checked);
-
-                $('rcpt-nome').innerText = $('input-nome').value;
-                setLine('rcpt-cnpj', $('input-cnpj').value ? `CNPJ: ${$('input-cnpj').value}` : '');
-                setLine('rcpt-endereco', $('input-endereco').value);
-                setLine('rcpt-tel', $('input-tel').value ? `WhatsApp: ${$('input-tel').value}` : '');
-
-                const atend = $('input-atendente').value.trim();
-                $('rcpt-atendente').innerText = atend;
-                $('rcpt-atendente-row').classList.toggle('hidden', !atend);
-
-                const cliente = $('input-cliente').value.trim();
-                $('rcpt-cliente').innerText = cliente;
-                $('rcpt-cliente-row').classList.toggle('hidden', !cliente && !$('input-cliente-info').value.trim());
-                setLine('rcpt-cliente-info', $('input-cliente-info').value.trim());
-
-                $('rcpt-numero').innerText = String(state.settings.orderNumber).padStart(6, '0');
-
-                const list = $('rcpt-items-list');
-                list.innerHTML = '';
-                receiptItems.forEach((item, idx) => {
-                    const totalItem = (Number(item.qtd) || 0) * (Number(item.valor) || 0);
-                    const row = document.createElement('div');
-                    row.className = 'py-1.5';
-                    row.innerHTML = `
+            const lista = $('rcpt-itens');
+            lista.innerHTML = '';
+            itens.forEach((item, idx) => {
+                const totalItem = (Number(item.qtd) || 0) * (Number(item.valor) || 0);
+                const row = document.createElement('div');
+                row.className = 'py-1.5';
+                row.innerHTML = `
                     <div class="flex justify-between items-start gap-1">
-                        <div class="w-7/12 break-words leading-tight">${idx + 1}. ${escapeHtml(item.nome)}</div>
+                        <div class="w-7/12 break-words leading-tight">${idx + 1}. ${esc(item.nome)}</div>
                         <div class="w-2/12 text-center">${item.qtd}x</div>
                         <div class="w-3/12 text-right font-bold">R$${totalItem.toFixed(2).replace('.', ',')}</div>
                     </div>
                     <div class="text-slate-600" style="font-size: 0.82em;">Unit: R$ ${Number(item.valor).toFixed(2).replace('.', ',')}</div>`;
-                    list.appendChild(row);
-                });
+                lista.appendChild(row);
+            });
 
-                const t = getTotals();
-                $('rcpt-subtotal').innerText = formatBRL(t.subtotal);
-                $('rcpt-entrega-row').classList.toggle('hidden', !(t.entrega > 0));
-                $('rcpt-entrega').innerText = formatBRL(t.entrega);
-                $('rcpt-desconto-row').classList.toggle('hidden', !(t.desconto > 0));
-                $('rcpt-desconto').innerText = `- ${formatBRL(t.desconto)}`;
-                $('rcpt-total').innerText = formatBRL(t.total);
-                $('rcpt-pagamento').innerText = $('input-pagamento').value;
-                $('rcpt-troco-box').classList.toggle('hidden', !(t.recebido > 0));
-                $('rcpt-recebido').innerText = formatBRL(t.recebido);
-                $('rcpt-troco').innerText = formatBRL(t.troco);
+            const t = getTotals();
+            $('rcpt-subtotal').innerText = formatBRL(t.subtotal);
+            $('rcpt-entrega-row').classList.toggle('hidden', !(t.entrega > 0));
+            $('rcpt-entrega').innerText = formatBRL(t.entrega);
+            $('rcpt-desconto-row').classList.toggle('hidden', !(t.desconto > 0));
+            $('rcpt-desconto').innerText = `- ${formatBRL(t.desconto)}`;
+            $('rcpt-total').innerText = formatBRL(t.total);
+            $('rcpt-pagamento').innerText = $('input-pagamento').value;
+            $('rcpt-troco-box').classList.toggle('hidden', !(t.recebido > 0));
+            $('rcpt-recebido').innerText = formatBRL(t.recebido);
+            $('rcpt-troco').innerText = formatBRL(t.troco);
 
-                const obs = $('input-obs').value.trim();
-                setLine('rcpt-obs', obs);
-                $('rcpt-obs-box').classList.toggle('hidden', !obs);
-
-                setLine('rcpt-rodape', $('input-rodape').value);
-            }
-
-            function resetOrderForm() {
-                receiptItems = [];
-                ['input-cliente', 'input-cliente-info', 'input-entrega', 'input-desconto', 'input-recebido', 'input-obs'].forEach(id => $(id).value = '');
-                $('input-pagamento').value = 'PIX';
-                renderEditorItems();
-                updateDateTime();
-                updateReceipt();
-            }
-
-            // ==================== IMPRESSÃO + REGISTRO DA VENDA ====================
-            function getLogoForPrint() {
-                if (state.settings.customLogo) return state.settings.customLogo;
-                if (!detectedLogo) return null;
-                const img = $('receipt-logo');
-                try {
-                    if (img.complete && img.naturalWidth) {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        canvas.getContext('2d').drawImage(img, 0, 0);
-                        return canvas.toDataURL('image/png');
-                    }
-                } catch (_) { }
-                return new URL(encodeURI(detectedLogo), location.href).href;
-            }
-
-            function openCleanWindow() {
-                const receiptNode = $('receipt-paper').cloneNode(true);
-                const logoSrc = getLogoForPrint();
-                const clonedLogo = receiptNode.querySelector('#receipt-logo');
-                if (clonedLogo) {
-                    if (logoSrc) {
-                        clonedLogo.src = logoSrc;
-                        clonedLogo.style.width = `${state.settings.logoWidth}px`;
-                        clonedLogo.classList.remove('hidden');
-                    } else {
-                        clonedLogo.remove();
-                    }
-                }
-                const isBold = $('input-bold-mode').checked;
-                const isLogoBw = $('input-logo-bw').checked;
-                const win = window.open('', '_blank', 'width=420,height=720');
-                if (!win) return null;
-
-                win.document.open();
-                win.document.write(`<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Cupom 80mm</title>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        @page { size: 80mm auto; margin: 0; }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Courier Prime', 'Courier New', monospace; margin: 0; padding: 3mm 4mm;
-            background: #ffffff; color: #000000; width: 80mm; font-size: ${state.settings.fontSize}px;
-            font-weight: ${isBold ? '700' : '400'}; line-height: 1.32;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            const obs = $('input-obs').value.trim();
+            setLine('rcpt-obs', obs);
+            $('rcpt-obs-box').classList.toggle('hidden', !obs);
+            setLine('rcpt-rodape', $('loja-rodape').value);
         }
-        .receipt-container { width: 100% !important; max-width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-        img { display: block; margin: 0 auto 6px auto; max-width: 100%; height: auto; ${isLogoBw ? 'filter: grayscale(100%) contrast(230%) brightness(106%);' : ''} }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .font-bold { font-weight: 700; }
-        .uppercase { text-transform: uppercase; }
-        .underline { text-decoration: underline; }
-        .hidden { display: none !important; }
-        .flex { display: flex; justify-content: space-between; align-items: flex-start; }
-        .w-7\\/12 { width: 58%; }
-        .w-3\\/12 { width: 25%; }
-        .w-2\\/12 { width: 17%; }
-        .border-b-2 { border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
-        .border-b { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-        .border-t { border-top: 1px dashed #000; padding-top: 5px; margin-top: 5px; }
-        .py-1\\.5 { padding-top: 5px; padding-bottom: 5px; border-bottom: 1px dotted #555; }
-        .space-y-0\\.5 > * + * { margin-top: 2px; }
-        .space-y-1 > * + * { margin-top: 4px; }
-        .space-y-1\\.5 > * + * { margin-top: 6px; }
-    </style>
-</head>
-<body>
-    ${receiptNode.outerHTML}
-    <script>
-        window.onload = function () {
-            setTimeout(function () { window.focus(); window.print(); }, 350);
-        };
-    <\/script>
-</body>
-</html>`);
-                win.document.close();
-                return win;
-            }
 
-            async function handlePrint(mode) {
-                if (receiptItems.length === 0) {
-                    showModal('Nota Vazia', 'Adicione pelo menos um item antes de imprimir.');
-                    return;
+        function limparPedido() {
+            itens = [];
+            ['input-cliente', 'input-cliente-tel', 'input-cliente-info', 'input-entrega', 'input-desconto', 'input-recebido', 'input-obs'].forEach(id => $(id).value = '');
+            $('input-pagamento').value = 'PIX';
+            delete $('rcpt-numero').dataset.fixo;
+            renderItens();
+            updateDateTime();
+            updateReceipt();
+        }
+
+        // ==================== WHATSAPP ====================
+        function normalizaTelefone(v) {
+            let d = String(v || '').replace(/\D/g, '');
+            if (!d) return '';
+            if (!d.startsWith('55') && (d.length === 10 || d.length === 11)) d = '55' + d;
+            return d.length >= 12 ? d : '';
+        }
+
+        function montarMensagem(numero, t, snap) {
+            const L = [];
+            L.push(`*${$('loja-nome').value.trim() || 'Seu pedido'}*`);
+            L.push(`Pedido Nº ${pad6(numero)} • ${$('rcpt-data').innerText}`);
+            L.push('');
+            L.push('*Itens:*');
+            snap.forEach(i => L.push(`${i.qtd}x ${i.nome} - ${formatBRL((Number(i.qtd) || 0) * (Number(i.valor) || 0))}`));
+            L.push('');
+            L.push(`Subtotal: ${formatBRL(t.subtotal)}`);
+            if (t.entrega > 0) L.push(`Entrega: ${formatBRL(t.entrega)}`);
+            if (t.desconto > 0) L.push(`Desconto: -${formatBRL(t.desconto)}`);
+            L.push(`*TOTAL: ${formatBRL(t.total)}*`);
+            L.push(`Pagamento: ${$('input-pagamento').value}`);
+
+            const chave = $('loja-chave-pix').value.trim();
+            if (chave) {
+                L.push('');
+                L.push('*Pague via PIX*');
+                L.push(`Chave (${$('loja-tipo-pix').value || 'PIX'}): ${chave}`);
+                L.push('Após o pagamento, envie o comprovante por aqui.');
+            }
+            const rodape = $('loja-rodape').value.trim();
+            if (rodape) { L.push(''); L.push(rodape); }
+            return L.join('\n');
+        }
+
+        // ==================== IMPRESSÃO ====================
+        function getLogoForPrint() {
+            if (!detectedLogo) return null;
+            const img = $('receipt-logo');
+            try {
+                if (img.complete && img.naturalWidth) {
+                    const c = document.createElement('canvas');
+                    c.width = img.naturalWidth;
+                    c.height = img.naturalHeight;
+                    c.getContext('2d').drawImage(img, 0, 0);
+                    return c.toDataURL('image/png');
                 }
+            } catch (_) {}
+            return new URL(encodeURI(detectedLogo), location.href).href;
+        }
 
-                // Registra a venda com o número atual e atualiza o cupom
-                const t = getTotals();
-                const sale = buildSale(t);
-                updateDateTime();
-                updateReceipt();
+        function escreverCupom(win) {
+            const node = $('receipt-paper').cloneNode(true);
+            const logoSrc = getLogoForPrint();
+            const logo = node.querySelector('#receipt-logo');
+            if (logo) {
+                if (logoSrc) { logo.src = logoSrc; logo.style.width = '155px'; logo.classList.remove('hidden'); }
+                else logo.remove();
+            }
+            const fonte = $('loja-fontsize').value;
+            win.document.open();
+            win.document.write(`<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><title>Cupom 80mm</title>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    @page { size: 80mm auto; margin: 0; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Courier Prime', 'Courier New', monospace; margin: 0; padding: 3mm 4mm; width: 80mm; color: #000; background: #fff; font-size: ${fonte}px; font-weight: 700; line-height: 1.32; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .receipt-container { width: 100% !important; max-width: 100% !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+    img { display: block; margin: 0 auto 6px auto; max-width: 100%; height: auto; filter: grayscale(100%) contrast(230%) brightness(106%); }
+    .text-center { text-align: center; } .text-right { text-align: right; } .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; } .underline { text-decoration: underline; } .hidden { display: none !important; }
+    .flex { display: flex; justify-content: space-between; align-items: flex-start; }
+    .w-7\\/12 { width: 58%; } .w-3\\/12 { width: 25%; } .w-2\\/12 { width: 17%; }
+    .border-b-2 { border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
+    .border-b { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+    .border-t { border-top: 1px dashed #000; padding-top: 5px; margin-top: 5px; }
+    .py-1\\.5 { padding-top: 5px; padding-bottom: 5px; border-bottom: 1px dotted #555; }
+</style></head><body>
+${node.outerHTML}
+<script>window.onload = function () { setTimeout(function () { window.focus(); window.print(); }, 350); };<\/script>
+</body></html>`);
+            win.document.close();
+        }
 
-                // Abre a janela de impressão de forma síncrona (exige clique do usuário)
-                let printWin = null;
-                if (mode === 'clean') printWin = openCleanWindow();
+        async function finalizar(acao) {
+            if (enviando) return;
+            if (!loja) return;
+            if (!itens.length) return showModal('Nota vazia', 'Adicione pelo menos um item antes de finalizar.');
 
-                state.sales.push(sale);
-                state.settings.orderNumber += 1;
-                saveLocal();
-                updateSalesCount();
-                updateReceipt();
-
-                const result = await saveWorkbook(true);
-                updateXlsxStatus();
-                showSaveBadge();
-                if (result) $('xlsx-status-text').innerText = `Venda ${sale.Pedido} registrada e planilha ${result}.`;
-
-                if (mode === 'direct' || !printWin) window.print();
+            const tel = normalizaTelefone($('input-cliente-tel').value);
+            if (acao !== 'imprimir' && !tel) {
+                return showModal('WhatsApp inválido', 'Informe o WhatsApp do cliente com DDD para enviar a mensagem.');
             }
 
-            // ==================== EVENTOS ====================
-            function bindEvents() {
-                $('receipt-logo').addEventListener('error', () => {
-                    $('receipt-logo').classList.add('hidden');
-                });
+            // Janelas são abertas ANTES do await, para o navegador não bloquear
+            const printWin = acao !== 'whatsapp' ? window.open('', '_blank', 'width=420,height=720') : null;
+            const waWin = acao !== 'imprimir' ? window.open('', '_blank') : null;
+            if (printWin) printWin.document.write('<p style="font-family:sans-serif;padding:12px">Preparando cupom...</p>');
 
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
-                });
-                $('btn-go-produtos').addEventListener('click', () => switchTab('produtos'));
+            const t = getTotals();
+            const snap = itens.map(i => ({ ...i }));
+            const payload = {
+                cliente: $('input-cliente').value.trim(),
+                contato: $('input-cliente-info').value.trim() || tel,
+                atendente: $('loja-atendente').value.trim(),
+                pagamento: $('input-pagamento').value,
+                subtotal: round2(t.subtotal),
+                entrega: round2(t.entrega),
+                desconto: round2(t.desconto),
+                total: round2(t.total),
+                recebido: round2(t.recebido),
+                troco: round2(t.troco),
+                observacoes: $('input-obs').value.trim(),
+                itens: snap.map(i => ({
+                    produto_id: i.produto_id || null,
+                    nome: i.nome,
+                    quantidade: Number(i.qtd) || 0,
+                    valor: Number(i.valor) || 0
+                }))
+            };
 
-                $('btn-font-dec').addEventListener('click', () => setFontSize(state.settings.fontSize - 1, true));
-                $('btn-font-inc').addEventListener('click', () => setFontSize(state.settings.fontSize + 1, true));
-                $('input-fontsize').addEventListener('input', e => setFontSize(e.target.value, true));
-                $('input-bold-mode').addEventListener('change', onSettingsChanged);
+            enviando = true;
+            const { data, error } = await sb.rpc('registrar_pedido', { p: payload });
+            enviando = false;
 
-                $('btn-add-item').addEventListener('click', () => {
-                    receiptItems.push({nome: '', qtd: 1, valor: 0});
-                    renderEditorItems();
-                    updateReceipt();
-                });
-                $('btn-clear-items').addEventListener('click', () => {
-                    receiptItems = [];
-                    renderEditorItems();
-                    updateReceipt();
-                });
-                $('btn-new-order').addEventListener('click', resetOrderForm);
-
-                ['input-cliente', 'input-cliente-info', 'input-entrega', 'input-desconto', 'input-pagamento', 'input-recebido', 'input-obs'].forEach(id => {
-                    $(id).addEventListener('input', updateReceipt);
-                    $(id).addEventListener('change', updateReceipt);
-                });
-
-                $('btn-import-xlsx').addEventListener('click', handleImport);
-                $('xlsx-file-input').addEventListener('change', onFallbackXlsxSelected);
-                $('btn-export-xlsx').addEventListener('click', () => {
-                    if (!hasSheetJS()) return;
-                    XLSX.writeFile(buildWorkbook(), currentFilename);
-                });
-                $('btn-sync-disk-xlsx').addEventListener('click', async () => {
-                    if (!hasSheetJS()) return;
-                    saveLocal();
-                    const result = await saveWorkbook(true);
-                    showModal('Planilha Salva', `Planilha ${result}.`);
-                });
-                $('btn-save-catalog-prod').addEventListener('click', saveProduct);
-                $('catalog-cancel-edit').addEventListener('click', resetProductForm);
-                $('catalog-search').addEventListener('input', renderCatalogUI);
-
-                $('input-logo-bw').addEventListener('change', () => toggleLogoFilter(true));
-                $('input-logo-width').addEventListener('input', e => updateLogoSize(e.target.value, true));
-
-                $('btn-upload-logo').addEventListener('click', () => $('logo-file-input').click());
-                $('logo-file-input').addEventListener('change', (e) => {
-                    const file = e.target.files && e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        state.settings.customLogo = ev.target.result;
-                        applyLogo();
-                        saveLocal();
-                    };
-                    reader.readAsDataURL(file);
-                    e.target.value = '';
-                });
-                $('btn-reset-logo').addEventListener('click', () => {
-                    state.settings.customLogo = null;
-                    applyLogo();
-                    saveLocal();
-                });
-
-                ['input-nome', 'input-cnpj', 'input-tel', 'input-endereco', 'input-atendente', 'input-rodape'].forEach(id => {
-                    $(id).addEventListener('input', onSettingsChanged);
-                });
-
-                $('btn-print-clean').addEventListener('click', () => handlePrint('clean'));
-                $('btn-print-direct').addEventListener('click', () => handlePrint('direct'));
-                $('modal-cancel-btn').addEventListener('click', closeModal);
+            if (error) {
+                if (printWin) printWin.close();
+                if (waWin) waWin.close();
+                return showModal('Erro ao registrar pedido', error.message);
             }
 
-            // ==================== INICIALIZAÇÃO ====================
-            async function bootstrap() {
-                bindEvents();
-                loadLocal();
-                applySettingsToUI();
-                renderEditorItems();
-                updateDateTime();
-                renderCatalogUI();
-                updateSalesCount();
+            const numero = (Array.isArray(data) ? data[0] : data).numero_pedido;
+            updateDateTime();
+            $('rcpt-numero').innerText = pad6(numero);
+            $('rcpt-numero').dataset.fixo = '1';
 
-                detectedLogo = await detectLogo();
-                applyLogo();
+            if (printWin) escreverCupom(printWin);
+            if (waWin) waWin.location.href = `https://wa.me/${tel}?text=${encodeURIComponent(montarMensagem(numero, t, snap))}`;
 
-                await restoreLinkedFile();
-                applySettingsToUI();
-                renderCatalogUI();
-                updateSalesCount();
-                updateXlsxStatus();
-            }
+            loja.proximo_pedido = numero + 1;
+            limparPedido();
+            showSaveBadge();
+        }
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', bootstrap);
-            } else {
-                bootstrap();
-            }
-        })();
+        // ==================== ABAS & EVENTOS ====================
+        function trocarAba(nome) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+            $(`tab-${nome}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                const ativa = b.dataset.tab === nome;
+                b.classList.toggle('bg-white', ativa);
+                b.classList.toggle('text-slate-900', ativa);
+                b.classList.toggle('shadow-xs', ativa);
+                b.classList.toggle('text-slate-600', !ativa);
+            });
+        }
+
+        function bindEvents() {
+            $('receipt-logo').addEventListener('error', () => $('receipt-logo').classList.add('hidden'));
+
+            // Login e cadastro
+            $('btn-entrar').addEventListener('click', entrar);
+            $('btn-criar-conta').addEventListener('click', criarConta);
+            $('btn-ir-cadastro').addEventListener('click', () => alternarAuth('cadastro'));
+            $('btn-ir-login').addEventListener('click', () => alternarAuth('login'));
+            $('auth-senha').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+            $('btn-sair').addEventListener('click', sair);
+
+            // Abas
+            document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => trocarAba(b.dataset.tab)));
+            $('btn-go-produtos').addEventListener('click', () => trocarAba('produtos'));
+
+            // Nota
+            $('btn-item-avulso').addEventListener('click', () => { itens.push({ nome: '', qtd: 1, valor: 0 }); renderItens(); updateReceipt(); });
+            $('btn-limpar-itens').addEventListener('click', () => { itens = []; renderItens(); updateReceipt(); });
+            $('btn-novo-pedido').addEventListener('click', limparPedido);
+
+            ['input-cliente', 'input-cliente-info', 'input-entrega', 'input-desconto', 'input-pagamento', 'input-recebido', 'input-obs'].forEach(id => {
+                $(id).addEventListener('input', updateReceipt);
+                $(id).addEventListener('change', updateReceipt);
+            });
+
+            // Produtos
+            $('btn-salvar-prod').addEventListener('click', salvarProduto);
+            $('btn-cancelar-prod').addEventListener('click', resetFormProduto);
+            $('prod-busca').addEventListener('input', renderProdutos);
+            $('btn-importar').addEventListener('click', () => $('input-arquivo-xlsx').click());
+            $('input-arquivo-xlsx').addEventListener('change', async (e) => {
+                const f = e.target.files && e.target.files[0];
+                if (f) await importarPlanilha(f);
+                e.target.value = '';
+            });
+            $('btn-exportar').addEventListener('click', exportarPlanilha);
+
+            // Loja & PIX
+            $('loja-fontsize').addEventListener('input', e => {
+                const v = e.target.value;
+                $('loja-fontsize-label').innerText = `${v}px`;
+                $('receipt-paper').style.fontSize = `${v}px`;
+            });
+            $('btn-salvar-loja').addEventListener('click', salvarLoja);
+            ['loja-nome', 'loja-cnpj', 'loja-telefone', 'loja-endereco', 'loja-atendente', 'loja-rodape', 'loja-chave-pix'].forEach(id => {
+                $(id).addEventListener('input', updateReceipt);
+            });
+
+            // Finalização
+            $('btn-whatsapp').addEventListener('click', () => finalizar('whatsapp'));
+            $('btn-imprimir').addEventListener('click', () => finalizar('imprimir'));
+            $('btn-imprimir-enviar').addEventListener('click', () => finalizar('ambos'));
+
+            $('modal-cancelar').addEventListener('click', fecharModal);
+        }
+
+        async function bootstrap() {
+            bindEvents();
+            detectedLogo = await detectLogo();
+            updateLogoStatus();
+            await iniciarApp();
+            if (!loja) mostrarTela('auth');
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootstrap);
+        else bootstrap();
+    })();
     </script>
 </body>
-
 </html>
