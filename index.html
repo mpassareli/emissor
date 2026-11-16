@@ -60,7 +60,7 @@
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
     <!-- ==================== TELA DE LOGIN E CADASTRO ==================== -->
-    <section id="tela-auth" class="hidden min-h-screen flex items-center justify-center p-4">
+  <section id="tela-auth" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-amber-800 text-white p-3 rounded-xl"><i class="fa-solid fa-receipt text-xl"></i></div>
@@ -1108,12 +1108,18 @@ ${node.outerHTML}
             $('modal-cancelar').addEventListener('click', fecharModal);
         }
 
-        async function bootstrap() {
+             async function bootstrap() {
             aplicarTema(document.documentElement.classList.contains('dark'));
             bindEvents();
-            detectedLogo = await detectLogo();
-            updateLogoStatus();
-            await iniciarApp();
+            try {
+                detectedLogo = await detectLogo();
+                updateLogoStatus();
+                await iniciarApp();
+            } catch (e) {
+                console.error(e);
+                mostrarTela('auth');
+                showModal('Erro ao iniciar', String(e.message || e));
+            }
             if (!loja) mostrarTela('auth');
         }
 
