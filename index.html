@@ -10,7 +10,7 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.20.2/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -29,13 +29,11 @@
         html.dark body { background-color: #0f172a !important; color: #e2e8f0 !important; }
         html.dark .bg-white, html.dark .bg-slate-50, html.dark .bg-amber-50, html.dark .bg-amber-50\/70,
         html.dark .bg-amber-50\/80, html.dark .bg-emerald-50\/80, html.dark .bg-emerald-50,
-        html.dark .from-amber-50, html.dark .to-orange-50\/50, html.dark .bg-amber-50\/80 { background-color: #1e293b !important; background-image: none !important; }
+        html.dark .from-amber-50, html.dark .to-orange-50\/50 { background-color: #1e293b !important; background-image: none !important; }
         html.dark .bg-slate-100 { background-color: #0f172a !important; }
         html.dark .bg-slate-200, html.dark .bg-slate-200\/80 { background-color: #334155 !important; }
         html.dark .bg-slate-200\/70 { background-color: #020617 !important; }
-        html.dark .bg-slate-100\/0 { background-color: transparent !important; }
-        html.dark .bg-slate-50, html.dark .bg-slate-100 { background-color: #1e293b !important; }
-        html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-950, html.dark .text-black { color: #f1f5f9 !important; }
+        html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-black { color: #f1f5f9 !important; }
         html.dark .text-slate-700 { color: #e2e8f0 !important; }
         html.dark .text-slate-600 { color: #cbd5e1 !important; }
         html.dark .text-slate-500, html.dark .text-slate-400 { color: #94a3b8 !important; }
@@ -46,13 +44,13 @@
         html.dark .border-amber-200 { border-color: #78350f !important; }
         html.dark .border-emerald-200, html.dark .border-emerald-300 { border-color: #065f46 !important; }
         html.dark .bg-amber-800 { background-color: #b45309 !important; }
+        html.dark .bg-slate-800 { background-color: #334155 !important; }
         html.dark .hover\:bg-slate-100:hover, html.dark .hover\:bg-slate-200:hover { background-color: #334155 !important; }
         html.dark input, html.dark select, html.dark textarea {
             background-color: #0f172a !important; color: #e2e8f0 !important; border-color: #334155 !important;
         }
         html.dark input::placeholder, html.dark textarea::placeholder { color: #64748b !important; }
-        html.dark .bg-slate-800 { background-color: #334155 !important; }
-        /* Cupom continua sempre branco e preto: é o que sai na bobina térmica */
+        /* O cupom continua branco e preto: é o que sai na bobina térmica */
         html.dark #receipt-paper { background-color: #ffffff !important; }
         html.dark #receipt-paper, html.dark #receipt-paper * { color: #000000 !important; border-color: #000000 !important; }
     </style>
@@ -60,7 +58,7 @@
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
     <!-- ==================== TELA DE LOGIN E CADASTRO ==================== -->
-  <section id="tela-auth" class="min-h-screen flex items-center justify-center p-4">
+    <section id="tela-auth" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
             <div class="text-center space-y-2">
                 <div class="inline-flex bg-amber-800 text-white p-3 rounded-xl"><i class="fa-solid fa-receipt text-xl"></i></div>
@@ -262,6 +260,26 @@
 
                 <!-- ABA LOJA & PIX -->
                 <section id="tab-loja" class="tab-content hidden space-y-4">
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-image mr-1.5"></i>Logo</h2>
+                        <div class="flex items-center gap-3">
+                            <div class="w-20 h-20 shrink-0 bg-white border border-slate-300 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img id="logo-preview" alt="" class="max-w-full max-h-full hidden">
+                                <span id="logo-preview-vazio" class="text-[10px] text-slate-400 text-center px-1">Sem logo</span>
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <p id="logo-status" class="text-[11px] text-slate-600">Procurando logo...</p>
+                                <div class="flex gap-2">
+                                    <button type="button" id="btn-enviar-logo" class="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer"><i class="fa-solid fa-upload mr-1"></i>Enviar logo</button>
+                                    <button type="button" id="btn-remover-logo" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer">Remover</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" id="input-logo" accept="image/png,image/jpeg,image/webp" class="hidden">
+                        <p class="text-[10px] text-slate-500">PNG, JPG ou WEBP, até 2 MB. Fundo transparente ou branco.</p>
+                    </div>
+
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-print mr-1.5"></i>Impressora</h2>
                         <div>
@@ -272,11 +290,6 @@
                             </select>
                         </div>
                         <p class="text-[11px] text-slate-500">Escolha a largura da bobina da sua impressora. O cupom é ajustado automaticamente.</p>
-                    </div>
-
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600"><i class="fa-solid fa-image mr-1.5"></i>Logo</h2>
-                        <p id="logo-status" class="text-[11px] text-slate-600">Procurando logo na pasta...</p>
                     </div>
 
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
@@ -350,7 +363,7 @@
         <main class="flex-1 flex flex-col items-center justify-start xl:justify-center p-6 md:p-10 overflow-y-auto bg-slate-200/70">
             <div id="receipt-paper" class="receipt-container receipt-font font-bold bg-white text-black max-w-full p-4 shadow-2xl border border-slate-300 leading-snug" style="font-size: 14px; width: 80mm;">
                 <div class="text-center border-b-2 border-dashed border-black pb-2.5 mb-2.5">
-                    <img id="receipt-logo" alt="Logo" class="thermal-bw mx-auto mb-2 block h-auto hidden" style="width: 155px;">
+                    <img id="receipt-logo" alt="" class="thermal-bw mx-auto mb-2 block h-auto hidden" style="width: 155px;">
                     <div id="rcpt-nome" class="font-bold uppercase tracking-wide" style="font-size: 1.15em;"></div>
                     <div id="rcpt-cnpj" style="font-size: 0.9em;"></div>
                     <div id="rcpt-endereco" class="leading-tight" style="font-size: 0.85em;"></div>
@@ -412,8 +425,9 @@
 
         // ==================== CONFIGURAÇÃO ====================
         // Substitua pelos valores do seu projeto Supabase (Project Settings → API Keys)
-       const SUPABASE_URL = 'https://macnfahjnmbgqefncljs.supabase.co';
+        const SUPABASE_URL = 'https://macnfahjnmbgqefncljs.supabase.co/rest/v1/';
         const SUPABASE_ANON_KEY = 'sb_publishable_tjr59YakGnKR8ha_gmzucw_zoEitFYf';
+        // Logo de reserva: usada só quando a loja ainda não enviou uma logo pelo sistema
         const LOGO_CANDIDATES = ['logo.png', 'logo.jpg', 'logo.jpeg', 'logo.webp', 'logo.svg', 'Feito a mao.png', 'Feito à mão.png'];
 
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -480,8 +494,7 @@
         function aplicarTema(escuro) {
             document.documentElement.classList.toggle('dark', escuro);
             localStorage.setItem('gestor_tema', escuro ? 'dark' : 'light');
-            const icone = $('btn-tema').querySelector('i');
-            icone.className = escuro ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            $('btn-tema').querySelector('i').className = escuro ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
         }
         function alternarTema() {
             aplicarTema(!document.documentElement.classList.contains('dark'));
@@ -573,7 +586,6 @@
             $('loja-fontsize-label').innerText = `${loja.font_size || 14}px`;
             $('receipt-paper').style.fontSize = `${loja.font_size || 14}px`;
             aplicarPapel();
-            updateLogoStatus();
             applyLogo();
         }
 
@@ -598,7 +610,7 @@
             showModal('Dados salvos', 'As configurações da loja foram atualizadas.');
         }
 
-        // ==================== LOGO (MESMA PASTA DO HTML) ====================
+        // ==================== LOGO ====================
         function detectLogo() {
             return new Promise((resolve) => {
                 let i = 0;
@@ -613,20 +625,86 @@
                 next();
             });
         }
+
+        // Prioridade: logo enviada pelo sistema > logo.png da pasta
+        function urlLogoAtual() {
+            if (loja && loja.logo_url) return loja.logo_url;
+            return detectedLogo ? encodeURI(detectedLogo) : null;
+        }
+
+        function updateLogoStatus() {
+            $('logo-status').innerText = loja && loja.logo_url
+                ? 'Logo enviada para a loja.'
+                : detectedLogo
+                    ? `Usando a logo da pasta: ${detectedLogo}`
+                    : 'Nenhuma logo. Envie uma imagem abaixo.';
+        }
+
         function applyLogo() {
+            const url = urlLogoAtual();
             const img = $('receipt-logo');
-            if (detectedLogo) {
-                img.src = encodeURI(detectedLogo);
+            const prev = $('logo-preview');
+            if (url) {
+                img.src = url;
                 img.classList.remove('hidden');
+                prev.src = url;
+                prev.classList.remove('hidden');
+                $('logo-preview-vazio').classList.add('hidden');
             } else {
+                img.removeAttribute('src');
                 img.classList.add('hidden');
+                prev.removeAttribute('src');
+                prev.classList.add('hidden');
+                $('logo-preview-vazio').classList.remove('hidden');
             }
+            $('btn-remover-logo').classList.toggle('hidden', !(loja && loja.logo_url));
             updateLogoStatus();
         }
-        function updateLogoStatus() {
-            $('logo-status').innerText = detectedLogo
-                ? `Logo carregada da pasta: ${detectedLogo}`
-                : 'Nenhuma logo encontrada. Coloque logo.png na mesma pasta deste arquivo.';
+
+        function getLogoForPrint() {
+            const url = urlLogoAtual();
+            return url ? new URL(url, location.href).href : null;
+        }
+
+        async function enviarLogo(file) {
+            if (!file.type.startsWith('image/')) return showModal('Arquivo inválido', 'Envie uma imagem PNG, JPG ou WEBP.');
+            if (file.size > 2 * 1024 * 1024) return showModal('Imagem muito grande', 'O limite é 2 MB.');
+
+            const { data: { session } } = await sb.auth.getSession();
+            const ext = ((file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '')) || 'png';
+            const path = `${session.user.id}/logo-${Date.now()}.${ext}`;
+
+            const up = await sb.storage.from('logos').upload(path, file, { contentType: file.type, upsert: false });
+            if (up.error) return showModal('Erro ao enviar logo', up.error.message);
+
+            const url = sb.storage.from('logos').getPublicUrl(path).data.publicUrl;
+            const antiga = loja.logo_url;
+
+            const { error } = await sb.from('lojas').update({ logo_url: url }).eq('id', loja.id);
+            if (error) return showModal('Erro ao salvar logo', error.message);
+
+            loja.logo_url = url;
+            if (antiga) await apagarArquivoLogo(antiga);
+            applyLogo();
+            updateReceipt();
+            showSaveBadge();
+        }
+
+        async function apagarArquivoLogo(url) {
+            const parte = String(url).split('/storage/v1/object/public/logos/')[1];
+            if (parte) await sb.storage.from('logos').remove([decodeURIComponent(parte)]);
+        }
+
+        function removerLogo() {
+            showModal('Remover logo', 'Deseja remover a logo da loja?', true, async () => {
+                const antiga = loja.logo_url;
+                const { error } = await sb.from('lojas').update({ logo_url: '' }).eq('id', loja.id);
+                if (error) return showModal('Erro ao remover logo', error.message);
+                loja.logo_url = '';
+                if (antiga) await apagarArquivoLogo(antiga);
+                applyLogo();
+                updateReceipt();
+            });
         }
 
         // ==================== PRODUTOS ====================
@@ -921,21 +999,6 @@
         }
 
         // ==================== IMPRESSÃO ====================
-        function getLogoForPrint() {
-            if (!detectedLogo) return null;
-            const img = $('receipt-logo');
-            try {
-                if (img.complete && img.naturalWidth) {
-                    const c = document.createElement('canvas');
-                    c.width = img.naturalWidth;
-                    c.height = img.naturalHeight;
-                    c.getContext('2d').drawImage(img, 0, 0);
-                    return c.toDataURL('image/png');
-                }
-            } catch (_) {}
-            return new URL(encodeURI(detectedLogo), location.href).href;
-        }
-
         function escreverCupom(win) {
             const mm = papelAtual();
             const node = $('receipt-paper').cloneNode(true);
@@ -943,8 +1006,13 @@
             const logoSrc = getLogoForPrint();
             const logo = node.querySelector('#receipt-logo');
             if (logo) {
-                if (logoSrc) { logo.src = logoSrc; logo.style.width = `${Math.round(mm * 1.9)}px`; logo.classList.remove('hidden'); }
-                else logo.remove();
+                if (logoSrc) {
+                    logo.src = logoSrc;
+                    logo.style.width = `${Math.round(mm * 1.9)}px`;
+                    logo.classList.remove('hidden');
+                } else {
+                    logo.remove();
+                }
             }
             const fonte = $('loja-fontsize').value;
             win.document.open();
@@ -982,7 +1050,7 @@ ${node.outerHTML}
                 return showModal('WhatsApp inválido', 'Informe o WhatsApp do cliente com DDD para enviar a mensagem.');
             }
 
-            // Janelas são abertas ANTES do await, para o navegador não bloquear
+            // As janelas são abertas ANTES do await, para o navegador não bloquear
             const printWin = acao !== 'whatsapp' ? window.open('', '_blank', 'width=420,height=720') : null;
             const waWin = acao !== 'imprimir' ? window.open('', '_blank') : null;
             if (printWin) printWin.document.write('<p style="font-family:sans-serif;padding:12px">Preparando cupom...</p>');
@@ -1086,6 +1154,14 @@ ${node.outerHTML}
             $('btn-exportar').addEventListener('click', exportarPlanilha);
 
             // Loja & PIX
+            $('btn-enviar-logo').addEventListener('click', () => $('input-logo').click());
+            $('input-logo').addEventListener('change', async (e) => {
+                const f = e.target.files && e.target.files[0];
+                e.target.value = '';
+                if (f) await enviarLogo(f);
+            });
+            $('btn-remover-logo').addEventListener('click', removerLogo);
+
             $('loja-papel').addEventListener('change', () => {
                 loja.papel_mm = parseInt($('loja-papel').value, 10) || 80;
                 updateReceipt();
@@ -1105,10 +1181,11 @@ ${node.outerHTML}
             $('btn-imprimir').addEventListener('click', () => finalizar('imprimir'));
             $('btn-imprimir-enviar').addEventListener('click', () => finalizar('ambos'));
 
+            $('modal-ok').addEventListener('click', fecharModal);
             $('modal-cancelar').addEventListener('click', fecharModal);
         }
 
-             async function bootstrap() {
+        async function bootstrap() {
             aplicarTema(document.documentElement.classList.contains('dark'));
             bindEvents();
             try {
