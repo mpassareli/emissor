@@ -3,26 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Vendas</title>
+    <title>Dashboard - Gestor de vendas</title>
+    <script>
+        if (localStorage.getItem('gestor_tema') === 'dark') document.documentElement.classList.add('dark');
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        /* ==================== MODO ESCURO ==================== */
+        html.dark body { background-color: #0f172a !important; color: #e2e8f0 !important; }
+        html.dark .bg-white, html.dark .bg-slate-50 { background-color: #1e293b !important; }
+        html.dark .bg-slate-100 { background-color: #0f172a !important; }
+        html.dark .bg-slate-200 { background-color: #334155 !important; }
+        html.dark .hover\:bg-slate-50:hover, html.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+        html.dark .text-slate-900, html.dark .text-slate-800 { color: #f1f5f9 !important; }
+        html.dark .text-slate-700 { color: #e2e8f0 !important; }
+        html.dark .text-slate-600 { color: #cbd5e1 !important; }
+        html.dark .text-slate-500, html.dark .text-slate-400 { color: #94a3b8 !important; }
+        html.dark .text-emerald-700 { color: #6ee7b7 !important; }
+        html.dark .border-slate-200, html.dark .border-slate-300, html.dark .border-slate-100 { border-color: #334155 !important; }
+        html.dark .divide-slate-100 > * { border-color: #334155 !important; }
+        html.dark thead.bg-slate-50 { background-color: #0f172a !important; }
+        html.dark select, html.dark input {
+            background-color: #0f172a !important; color: #e2e8f0 !important; border-color: #334155 !important;
+        }
+        html.dark .bg-amber-800 { background-color: #b45309 !important; }
+        html.dark .bg-emerald-700 { background-color: #047857 !important; }
+        html.dark .bg-slate-200:hover { background-color: #475569 !important; }
+    </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen">
 
     <header class="bg-white border-b border-slate-200 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-            <h1 id="header-loja" class="text-lg font-bold">Dashboard de Vendas</h1>
+            <h1 class="text-lg font-bold">Gestor de vendas</h1>
+            <p id="header-loja" class="text-xs text-slate-500">Dashboard de vendas</p>
             <p id="periodo-label" class="text-xs text-slate-500">Carregando...</p>
         </div>
         <div class="flex flex-wrap gap-2">
             <a href="index.html" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-lg"><i class="fa-solid fa-receipt mr-1"></i>Emissor</a>
+            <button id="btn-tema" type="button" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg cursor-pointer" title="Alternar tema"><i class="fa-solid fa-moon"></i></button>
             <button id="btn-exportar" type="button" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg cursor-pointer"><i class="fa-solid fa-file-excel mr-1"></i>Exportar</button>
-            <button id="btn-sair" type="button" class="text-xs bg-slate-200 hover:bg-slate-300 px-3 py-2 rounded-lg cursor-pointer"><i class="fa-solid fa-right-from-bracket mr-1"></i>Sair</button>
+            <button id="btn-sair" type="button" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg cursor-pointer"><i class="fa-solid fa-right-from-bracket mr-1"></i>Sair</button>
         </div>
     </header>
 
@@ -112,7 +140,7 @@
 
     <div id="modal" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
-            <h3 id="modal-titulo" class="text-base font-bold">Aviso</h3>
+            <h3 id="modal-titulo" class="text-base font-bold text-slate-900">Aviso</h3>
             <p id="modal-texto" class="text-xs text-slate-600"></p>
             <div class="flex justify-end">
                 <button type="button" id="modal-ok" class="px-4 py-2 text-xs font-semibold bg-amber-800 hover:bg-amber-900 text-white rounded-xl cursor-pointer">Entendi</button>
@@ -124,9 +152,9 @@
     (function () {
         'use strict';
 
-        // Substitua pelos valores do seu projeto Supabase (os mesmos usados no index.html)
-        const SUPABASE_URL = 'SUA_URL';
-        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON';
+        // Use os mesmos valores do index.html
+        const SUPABASE_URL = 'https://macnfahjnmbgqefncljs.supabase.co/rest/v1/';
+        const SUPABASE_ANON_KEY = 'sb_publishable_tjr59YakGnKR8ha_gmzucw_zoEitFYf';
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const $ = (id) => document.getElementById(id);
@@ -155,6 +183,17 @@
         let lojaId = null;
         let pedidos = [];
         const charts = {};
+
+        // ==================== TEMA ====================
+        function aplicarTema(escuro) {
+            document.documentElement.classList.toggle('dark', escuro);
+            localStorage.setItem('gestor_tema', escuro ? 'dark' : 'light');
+            $('btn-tema').querySelector('i').className = escuro ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            // Cores dos gráficos acompanham o tema
+            Chart.defaults.color = escuro ? '#cbd5e1' : '#475569';
+            Chart.defaults.borderColor = escuro ? '#334155' : '#e2e8f0';
+            if (pedidos.length || lojaId) render();
+        }
 
         function getRange() {
             const agora = new Date();
@@ -220,7 +259,7 @@
                 type: 'bar',
                 data: {
                     labels: dias.map(k => { const [, m, d] = k.split('-'); return `${d}/${m}`; }),
-                    datasets: [{ label: 'Faturamento', data: dias.map(k => porDia.get(k)), backgroundColor: '#92400e', borderRadius: 4 }]
+                    datasets: [{ label: 'Faturamento', data: dias.map(k => porDia.get(k)), backgroundColor: '#b45309', borderRadius: 4 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
                     scales: { y: { beginAtZero: true, ticks: { callback: v => brl(v) } } } }
@@ -235,7 +274,7 @@
                 type: 'doughnut',
                 data: {
                     labels: [...porPgto.keys()],
-                    datasets: [{ data: [...porPgto.values()], backgroundColor: ['#92400e', '#059669', '#2563eb', '#d97706', '#7c3aed', '#64748b'] }]
+                    datasets: [{ data: [...porPgto.values()], backgroundColor: ['#b45309', '#059669', '#2563eb', '#d97706', '#7c3aed', '#64748b'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
@@ -313,6 +352,8 @@
         }
 
         async function init() {
+            aplicarTema(document.documentElement.classList.contains('dark'));
+
             const { data: { session } } = await sb.auth.getSession();
             if (!session) return location.href = 'index.html';
 
@@ -320,12 +361,13 @@
             if (error || !data) return location.href = 'index.html';
 
             lojaId = data.id;
-            if (data.nome) $('header-loja').innerText = `Dashboard — ${data.nome}`;
+            if (data.nome) $('header-loja').innerText = data.nome;
 
             const hoje = dayKey(new Date());
             $('data-ini').value = hoje;
             $('data-fim').value = hoje;
 
+            $('btn-tema').addEventListener('click', () => aplicarTema(!document.documentElement.classList.contains('dark')));
             $('filtro-periodo').addEventListener('change', () => {
                 const custom = $('filtro-periodo').value === 'custom';
                 $('campos-custom').classList.toggle('hidden', !custom);
